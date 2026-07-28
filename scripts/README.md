@@ -7,12 +7,14 @@ This directory contains deterministic utilities for the sanitized public archite
 
 Docker is required for both scripts. Local rendering additionally requires GNU/Linux or WSL, Bash 4 or newer, GNU findutils, and GNU coreutils. Stock macOS Bash and BSD utilities are not supported directly; macOS users should run the rendering command through a compatible GNU/Linux environment, such as a Linux container, virtual machine, or equivalent.
 
-Run the scripts from any directory with:
+From the repository root, run:
 
 ```bash
 bash scripts/validate-architecture.sh
 bash scripts/render-architecture.sh
 ```
+
+From another directory, invoke the scripts using the explicit absolute or relative path to the repository clone.
 
 Generated SVGs under `build/architecture-svg/` are temporary local or CI preview outputs. They are not copied into the publication directory or committed automatically.
 

@@ -46,8 +46,46 @@ assert_count 1 '^[[:space:]]*systemContext[[:space:]]' "${WORKSPACE_FILE}" 'a sy
 assert_count 1 '^[[:space:]]*container[[:space:]]+trustSender[[:space:]]' "${WORKSPACE_FILE}" 'a container view'
 assert_count 1 'systemContext trustSender "trustsender-system-context"' "${WORKSPACE_FILE}" 'the system-context key'
 assert_count 1 'container trustSender "trustsender-container-view"' "${WORKSPACE_FILE}" 'the container-view key'
-assert_count 1 'p2Smtp = container .*"Status: ONGOING[.]' "${WORKSPACE_FILE}" 'the P2 ONGOING description'
-assert_count 1 'p2Smtp = container .*"Ongoing"[[:space:]]*$' "${WORKSPACE_FILE}" 'the P2 Ongoing tag'
+
+if ! awk '
+    {
+        line = $0
+        while (1) {
+            if (in_block_comment) {
+                block_end = index(line, "*/")
+                if (!block_end) {
+                    line = ""
+                    break
+                }
+                line = substr(line, block_end + 2)
+                in_block_comment = 0
+            }
+
+            block_start = index(line, "/*")
+            if (!block_start) break
+
+            block_tail = substr(line, block_start + 2)
+            block_end = index(block_tail, "*/")
+            if (block_end) {
+                line = substr(line, 1, block_start - 1) substr(block_tail, block_end + 2)
+            } else {
+                line = substr(line, 1, block_start - 1)
+                in_block_comment = 1
+                break
+            }
+        }
+
+        if (line ~ /^[[:space:]]*p2Smtp[[:space:]]*=[[:space:]]*container[[:space:]]/) {
+            declarations++
+            if (line ~ /"Status: ONGOING[.]/) ongoing_status++
+            if (line ~ /"Ongoing"[[:space:]]*$/) ongoing_tag++
+        }
+    }
+    END { exit(declarations != 1 || ongoing_status != 1 || ongoing_tag != 1) }
+' "${WORKSPACE_FILE}"; then
+    printf 'Error: expected exactly one active P2 container declaration with Status: ONGOING. and the Ongoing tag.\n' >&2
+    exit 1
+fi
 
 if awk '
     /^[[:space:]]*([^[:space:]=]+[[:space:]]*=[[:space:]]*)?(p2Smtp[[:space:]]*->[[:space:]]*[^[:space:]]+|[^[:space:]=]+[[:space:]]*->[[:space:]]*p2Smtp)([[:space:]]|$)/ {
