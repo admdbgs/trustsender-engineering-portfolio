@@ -48,6 +48,40 @@ assert_count 1 'systemContext trustSender "trustsender-system-context"' "${WORKS
 assert_count 1 'container trustSender "trustsender-container-view"' "${WORKSPACE_FILE}" 'the container-view key'
 
 if ! awk '
+    function active_code(text,    result, index_in_line, character, next_character, in_quote, escaped) {
+        result = ""
+        in_quote = 0
+        escaped = 0
+
+        for (index_in_line = 1; index_in_line <= length(text); index_in_line++) {
+            character = substr(text, index_in_line, 1)
+            next_character = substr(text, index_in_line + 1, 1)
+
+            if (in_quote) {
+                result = result character
+                if (escaped) {
+                    escaped = 0
+                } else if (character == "\\") {
+                    escaped = 1
+                } else if (character == "\"") {
+                    in_quote = 0
+                }
+                continue
+            }
+
+            if (character == "\"") {
+                in_quote = 1
+                result = result character
+            } else if (character == "#" || (character == "/" && next_character == "/")) {
+                break
+            } else {
+                result = result character
+            }
+        }
+
+        return result
+    }
+
     {
         line = $0
         while (1) {
@@ -74,6 +108,8 @@ if ! awk '
                 break
             }
         }
+
+        line = active_code(line)
 
         if (line ~ /^[[:space:]]*p2Smtp[[:space:]]*=[[:space:]]*container[[:space:]]/) {
             declarations++
