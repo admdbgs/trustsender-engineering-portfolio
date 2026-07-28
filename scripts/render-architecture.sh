@@ -8,10 +8,42 @@ STYLES_FILE="${REPOSITORY_ROOT}/architecture/styles.dsl"
 OUTPUT_DIRECTORY="${REPOSITORY_ROOT}/build/architecture-svg"
 RENDER_IMAGE="${STRUCTURIZR_RENDER_IMAGE:-structurizr/structurizr:2026.06.28-playwright}"
 
-if ! command -v docker >/dev/null 2>&1; then
-    printf 'Error: Docker is required to render the architecture.\n' >&2
+prerequisite_error() {
+    printf 'Error: local architecture rendering requires GNU/Linux or WSL with Bash 4+, GNU findutils, GNU coreutils, and Docker.\n' >&2
+}
+
+if (( BASH_VERSINFO[0] < 4 )); then
+    printf 'Error: Bash 4 or newer is required for local architecture rendering.\n' >&2
+    prerequisite_error
     exit 1
 fi
+
+for required_command in docker find sort realpath sha256sum grep uname; do
+    if ! command -v "${required_command}" >/dev/null 2>&1; then
+        printf 'Error: required command is unavailable: %s\n' "${required_command}" >&2
+        prerequisite_error
+        exit 1
+    fi
+done
+
+if [[ "$(uname -s)" != "Linux" ]]; then
+    prerequisite_error
+    exit 1
+fi
+
+if ! find --version 2>&1 | grep -q 'GNU findutils'; then
+    printf 'Error: GNU findutils is required for local architecture rendering.\n' >&2
+    prerequisite_error
+    exit 1
+fi
+
+for coreutils_command in sort realpath sha256sum; do
+    if ! "${coreutils_command}" --version 2>&1 | grep -q 'GNU coreutils'; then
+        printf 'Error: GNU coreutils command is required: %s\n' "${coreutils_command}" >&2
+        prerequisite_error
+        exit 1
+    fi
+done
 
 for required_file in "${WORKSPACE_FILE}" "${STYLES_FILE}"; do
     if [[ ! -f "${required_file}" ]]; then
