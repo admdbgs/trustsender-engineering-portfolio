@@ -1,0 +1,73 @@
+name: Architecture CI
+
+on:
+  pull_request:
+    paths:
+      - architecture/**
+      - scripts/**
+      - .github/workflows/architecture-ci.yml
+      - README.md
+      - diagrams/README.md
+  push:
+    branches:
+      - main
+    paths:
+      - architecture/**
+      - scripts/**
+      - .github/workflows/architecture-ci.yml
+      - README.md
+      - diagrams/README.md
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: architecture-ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  validate-and-render:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Validate architecture
+        run: bash scripts/validate-architecture.sh
+
+      - name: Render dark-mode SVG previews
+        run: bash scripts/render-architecture.sh
+
+      - name: Independently verify preview outputs
+        shell: bash
+        run: |
+          set -euo pipefail
+          output_directory=build/architecture-svg
+          if [[ -L "${output_directory}" ]] || find "${output_directory}" -type l -print -quit | grep -q .; then
+            echo "Error: symbolic links are not allowed in preview output." >&2
+            exit 1
+          fi
+          mapfile -d '' svg_files < <(find "${output_directory}" -type f -name '*.svg' -print0)
+          if [[ "${#svg_files[@]}" -ne 2 ]]; then
+            echo "Error: expected exactly two SVG files, found ${#svg_files[@]}." >&2
+            exit 1
+          fi
+          for svg_file in "${svg_files[@]}"; do
+            test -s "${svg_file}" || {
+              echo "Error: empty SVG file: ${svg_file}" >&2
+              exit 1
+            }
+          done
+          if [[ -n "$(git status --porcelain --untracked-files=all -- diagrams/ '*.svg')" ]]; then
+            echo "Error: generated SVG content was written under diagrams/." >&2
+            exit 1
+          fi
+
+      - name: Upload dark-mode SVG previews
+        uses: actions/upload-artifact@v4
+        with:
+          name: trustsender-architecture-dark-svg
+          path: build/architecture-svg/*.svg
+          if-no-files-found: error
+          retention-days: 7
