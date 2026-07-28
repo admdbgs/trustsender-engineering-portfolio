@@ -49,11 +49,12 @@ element "Editorial" {
 
 relationship "Operational" {
     color #94A3B8
+    style solid
     thickness 2
 }
 
 relationship "Ongoing" {
     color #F59E0B
-    dashed true
+    style dashed
     thickness 2
 }
