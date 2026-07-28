@@ -17,11 +17,23 @@ P2 is not represented as operational. Its documentation will evolve only as appr
 
 The canonical public architecture is maintained as text in [`architecture/workspace.dsl`](architecture/workspace.dsl). Its sanitized scope and modeling conventions are documented in [`architecture/model-notes.md`](architecture/model-notes.md).
 
-Rendered diagrams will be added only after the textual model is reviewed.
+## Architecture diagrams
+
+### System Context
+
+[![TrustSender.io System Context](diagrams/trustsender-system-context.svg)](diagrams/trustsender-system-context.svg)
+
+The System Context view shows the people and external systems that interact with the public TrustSender.io platform. Click the diagram to open the full SVG.
+
+### Container View
+
+[![TrustSender.io Container View](diagrams/trustsender-container-view.svg)](diagrams/trustsender-container-view.svg)
+
+The Container View shows the operational application, data, editorial, control-plane, and distributed P1 components. The P2 SMTP Execution Plane is shown separately as `ONGOING`, not operational. Solid relationships represent operational interactions; amber dashed relationships represent ongoing evolution. Click the diagram to open the full SVG.
 
 ## Architecture validation
 
-GitHub Actions validates the canonical Structurizr DSL and generates two dark-mode architecture previews as temporary CI artifacts. Each preview is accompanied by an automatically generated key/legend SVG. Diagrams are published only after human validation, visual, and public-safety review; previews are not embedded or published automatically.
+GitHub Actions validates the canonical Structurizr DSL and generates dark-mode architecture previews for review. Publication-ready SVGs are committed only after model validation, visual inspection, and public-safety inspection.
 
 ## Roadmap
 
@@ -33,11 +45,11 @@ GitHub Actions validates the canonical Structurizr DSL and generates two dark-mo
 
 ## Repository contents
 
-- `architecture/` contains reviewed architecture narratives and, in the future, the canonical model.
+- `architecture/` contains the reviewed canonical public architecture model and supporting narratives.
 - `visuals/` defines the presentation direction for the visual whitepaper.
-- `diagrams/` will hold reviewed publication-ready diagrams.
+- `diagrams/` contains reviewed publication-ready architecture diagrams.
 - `metrics/` defines a schema for future sanitized aggregate metrics.
-- `scripts/` is reserved for reviewed portfolio-generation utilities.
+- `scripts/` contains reviewed architecture validation and rendering utilities.
 - `assets/` is reserved for approved publication assets and icons.
 
 All public content must follow the safety and review requirements in [`AGENTS.md`](AGENTS.md).
