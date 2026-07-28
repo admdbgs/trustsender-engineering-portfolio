@@ -47,7 +47,7 @@ assert_count 1 '^[[:space:]]*container[[:space:]]+trustSender[[:space:]]' "${WOR
 assert_count 1 'systemContext trustSender "trustsender-system-context"' "${WORKSPACE_FILE}" 'the system-context key'
 assert_count 1 'container trustSender "trustsender-container-view"' "${WORKSPACE_FILE}" 'the container-view key'
 
-if ! awk '
+if awk '
     function active_code(text,    result, index_in_line, character, next_character, in_quote, escaped) {
         result = ""
         in_quote = 0
@@ -116,23 +116,25 @@ if ! awk '
             if (line ~ /"Status: ONGOING[.]/) ongoing_status++
             if (line ~ /"Ongoing"[[:space:]]*$/) ongoing_tag++
         }
-    }
-    END { exit(declarations != 1 || ongoing_status != 1 || ongoing_tag != 1) }
-' "${WORKSPACE_FILE}"; then
-    printf 'Error: expected exactly one active P2 container declaration with Status: ONGOING. and the Ongoing tag.\n' >&2
-    exit 1
-fi
 
-if awk '
-    /^[[:space:]]*([^[:space:]=]+[[:space:]]*=[[:space:]]*)?(p2Smtp[[:space:]]*->[[:space:]]*[^[:space:]]+|[^[:space:]=]+[[:space:]]*->[[:space:]]*p2Smtp)([[:space:]]|$)/ {
-        found = 1
-        if ($0 !~ /"Ongoing"[[:space:]]*$/) invalid = 1
+        if (line ~ /^[[:space:]]*([^[:space:]=]+[[:space:]]*=[[:space:]]*)?(p2Smtp[[:space:]]*->[[:space:]]*[^[:space:]]+|[^[:space:]=]+[[:space:]]*->[[:space:]]*p2Smtp)([[:space:]]|$)/) {
+            relationships++
+            if (line !~ /"Ongoing"[[:space:]]*$/) invalid_relationship = 1
+        }
     }
-    END { exit(!found || invalid) }
+    END {
+        if (declarations != 1 || ongoing_status != 1 || ongoing_tag != 1) exit 2
+        if (!relationships || invalid_relationship) exit 3
+    }
 ' "${WORKSPACE_FILE}"; then
     :
 else
-    printf 'Error: every P2 relationship must have the Ongoing tag.\n' >&2
+    validation_status=$?
+    if [[ "${validation_status}" -eq 2 ]]; then
+        printf 'Error: expected exactly one active P2 container declaration with Status: ONGOING. and the Ongoing tag.\n' >&2
+    else
+        printf 'Error: every active P2 relationship must have the Ongoing tag.\n' >&2
+    fi
     exit 1
 fi
 
