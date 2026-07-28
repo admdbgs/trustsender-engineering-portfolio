@@ -140,7 +140,10 @@ def validate_workspace(workspace: Any) -> None:
     relationship_styles = require_array(
         styles.get("relationships"), "views.configuration.styles.relationships"
     )
-    for required_tag, expected_dashed in (("Operational", False), ("Ongoing", True)):
+    for required_tag, expected_style in (
+        ("Operational", "Solid"),
+        ("Ongoing", "Dashed"),
+    ):
         matches = []
         for index, value in enumerate(relationship_styles):
             style = require_object(
@@ -152,11 +155,11 @@ def validate_workspace(workspace: Any) -> None:
             raise ValidationError(
                 f"relationship styles must contain exactly one {required_tag!r} style"
             )
-        dashed = matches[0].get("dashed")
-        if type(dashed) is not bool or dashed is not expected_dashed:
+        line_style = matches[0].get("style")
+        if line_style != expected_style or not isinstance(line_style, str):
             raise ValidationError(
-                f"{required_tag} relationship style dashed must be exactly "
-                f"{str(expected_dashed).lower()}"
+                f"{required_tag} relationship style must have style exactly "
+                f"{expected_style!r}"
             )
 
 
