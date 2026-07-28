@@ -4,26 +4,26 @@
 import json
 import pathlib
 import sys
-from typing import Any, Iterator
+from typing import Any, Dict, Iterator, List, Set
 
 
 class ValidationError(Exception):
     """An expected architecture invariant was not satisfied."""
 
 
-def require_object(value: Any, location: str) -> dict[str, Any]:
+def require_object(value: Any, location: str) -> Dict[str, Any]:
     if not isinstance(value, dict):
         raise ValidationError(f"{location} must be an object")
     return value
 
 
-def require_array(value: Any, location: str) -> list[Any]:
+def require_array(value: Any, location: str) -> List[Any]:
     if not isinstance(value, list):
         raise ValidationError(f"{location} must be an array")
     return value
 
 
-def parse_tags(value: Any, location: str) -> set[str]:
+def parse_tags(value: Any, location: str) -> Set[str]:
     if value is None:
         return set()
     if not isinstance(value, str):
@@ -31,7 +31,7 @@ def parse_tags(value: Any, location: str) -> set[str]:
     return {token.strip() for token in value.split(",") if token.strip()}
 
 
-def relationship_objects(value: Any) -> Iterator[dict[str, Any]]:
+def relationship_objects(value: Any) -> Iterator[Dict[str, Any]]:
     if isinstance(value, dict):
         if "sourceId" in value and "destinationId" in value:
             yield value
@@ -43,7 +43,7 @@ def relationship_objects(value: Any) -> Iterator[dict[str, Any]]:
 
 
 def validate_named_view(
-    views: dict[str, Any], array_name: str, expected_key: str
+    views: Dict[str, Any], array_name: str, expected_key: str
 ) -> None:
     entries = require_array(views.get(array_name), f"views.{array_name}")
     if len(entries) != 1:
