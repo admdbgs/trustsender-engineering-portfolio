@@ -14,7 +14,7 @@ Automatic layout is used for both views. D2 remains planned as the presentation 
 
 ## Validation and preview rendering
 
-The canonical model remains [`workspace.dsl`](workspace.dsl). The [`validation script`](../scripts/validate-architecture.sh) checks the model and repository invariants, while the [`rendering script`](../scripts/render-architecture.sh) creates dark SVG previews. These previews are temporary local or CI artifacts until they pass human review; they are not publication outputs.
+The canonical model remains [`workspace.dsl`](workspace.dsl). The [`validation script`](../scripts/validate-architecture.sh) checks the model and repository invariants, while the [`rendering script`](../scripts/render-architecture.sh) creates two dark architecture diagrams and two companion key/legend SVGs. CI produces the same four files as temporary artifacts. These outputs remain temporary until they pass human review; they are not publication outputs.
 
 ## Public safety
 

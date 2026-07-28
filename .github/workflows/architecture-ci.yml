@@ -48,12 +48,23 @@ jobs:
             echo "Error: symbolic links are not allowed in preview output." >&2
             exit 1
           fi
-          mapfile -d '' svg_files < <(find "${output_directory}" -type f -name '*.svg' -print0)
-          if [[ "${#svg_files[@]}" -ne 2 ]]; then
-            echo "Error: expected exactly two SVG files, found ${#svg_files[@]}." >&2
+          expected_filenames=(
+            trustsender-container-view-key.svg
+            trustsender-container-view.svg
+            trustsender-system-context-key.svg
+            trustsender-system-context.svg
+          )
+          mapfile -d '' svg_files < <(find "${output_directory}" -type f -name '*.svg' -print0 | sort -z)
+          if [[ "${#svg_files[@]}" -ne 4 ]]; then
+            echo "Error: expected exactly four SVG files, found ${#svg_files[@]}." >&2
             exit 1
           fi
-          for svg_file in "${svg_files[@]}"; do
+          for index in "${!expected_filenames[@]}"; do
+            svg_file="${svg_files[index]}"
+            if [[ "${svg_file##*/}" != "${expected_filenames[index]}" ]]; then
+              echo "Error: expected SVG file ${expected_filenames[index]}, found ${svg_file##*/}." >&2
+              exit 1
+            fi
             test -s "${svg_file}" || {
               echo "Error: empty SVG file: ${svg_file}" >&2
               exit 1

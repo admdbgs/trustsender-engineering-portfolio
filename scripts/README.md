@@ -3,7 +3,7 @@
 This directory contains deterministic utilities for the sanitized public architecture model:
 
 - [`validate-architecture.sh`](validate-architecture.sh) validates the canonical DSL with `structurizr/structurizr:2026.06.28-noble`, then checks repository-specific view, status, tag, and style invariants.
-- [`render-architecture.sh`](render-architecture.sh) renders two dark-mode SVG previews with `structurizr/structurizr:2026.06.28-playwright` and verifies the output files and their boundaries.
+- [`render-architecture.sh`](render-architecture.sh) renders two dark-mode diagram previews with `structurizr/structurizr:2026.06.28-playwright`. Each preview is accompanied by an automatically generated key/legend SVG, producing four artifact files in total. The script verifies all output files and their boundaries.
 
 Docker is required. Run the scripts from any directory with:
 

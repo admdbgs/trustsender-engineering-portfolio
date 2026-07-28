@@ -38,17 +38,29 @@ if [[ -L "${OUTPUT_DIRECTORY}" ]] || find "${OUTPUT_DIRECTORY}" -type l -print -
     exit 1
 fi
 
+expected_filenames=(
+    trustsender-container-view-key.svg
+    trustsender-container-view.svg
+    trustsender-system-context-key.svg
+    trustsender-system-context.svg
+)
 mapfile -d '' svg_files < <(find "${OUTPUT_DIRECTORY}" -type f -name '*.svg' -print0 | sort -z)
-if [[ "${#svg_files[@]}" -ne 2 ]]; then
-    printf 'Error: expected exactly two SVG files, found %s.\n' "${#svg_files[@]}" >&2
+if [[ "${#svg_files[@]}" -ne 4 ]]; then
+    printf 'Error: expected exactly four SVG files, found %s.\n' "${#svg_files[@]}" >&2
     exit 1
 fi
 
 output_real="$(realpath -- "${OUTPUT_DIRECTORY}")"
-for svg_file in "${svg_files[@]}"; do
+for index in "${!expected_filenames[@]}"; do
+    svg_file="${svg_files[index]}"
     file_real="$(realpath -- "${svg_file}")"
     if [[ "${file_real}" != "${output_real}/"* ]]; then
         printf 'Error: generated file escaped the output directory: %s\n' "${svg_file}" >&2
+        exit 1
+    fi
+    if [[ "${svg_file##*/}" != "${expected_filenames[index]}" ]]; then
+        printf 'Error: expected SVG file %s, found %s.\n' \
+            "${expected_filenames[index]}" "${svg_file##*/}" >&2
         exit 1
     fi
     if [[ ! -s "${svg_file}" ]]; then

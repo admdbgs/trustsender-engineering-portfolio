@@ -21,7 +21,7 @@ Rendered diagrams will be added only after the textual model is reviewed.
 
 ## Architecture validation
 
-GitHub Actions validates the canonical Structurizr DSL and generates two dark-mode SVG previews as temporary CI artifacts. Diagrams are published only after human validation, visual, and public-safety review; previews are not embedded or published automatically.
+GitHub Actions validates the canonical Structurizr DSL and generates two dark-mode architecture previews as temporary CI artifacts. Each preview is accompanied by an automatically generated key/legend SVG. Diagrams are published only after human validation, visual, and public-safety review; previews are not embedded or published automatically.
 
 ## Roadmap
 
