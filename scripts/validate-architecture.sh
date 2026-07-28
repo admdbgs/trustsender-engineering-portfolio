@@ -1,6 +1,11 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+if (( BASH_VERSINFO[0] < 4 )); then
+    printf 'Error: architecture validation requires Bash 4 or newer.\n' >&2
+    exit 1
+fi
+
 SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
 REPOSITORY_ROOT="$(cd -- "${SCRIPT_DIR}/.." && pwd)"
 WORKSPACE_FILE="${REPOSITORY_ROOT}/architecture/workspace.dsl"
