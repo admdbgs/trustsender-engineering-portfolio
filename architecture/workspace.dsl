@@ -17,7 +17,7 @@ workspace "TrustSender.io Public Architecture" "Canonical, sanitized C4 model fo
             database = container "PostgreSQL Database" "Stores authoritative identity, session, billing, licensing, job-lifecycle, worker, event, and operational metadata." "PostgreSQL" "Operational,Data Store"
             jobControl = container "Job Control Plane" "Coordinates job lifecycle, worker selection, leases, attempts, progress, cancellation, and terminal processing." "Python, systemd orchestration" "Operational"
             p1Workers = container "Distributed P1 Worker Plane" "Executes the current distributed P1 validation engine and returns validation evidence and report artifacts to the control plane." "Python, distributed workers" "Operational"
-            p2Smtp = container "P2 SMTP Execution Plane" "Will execute conservative SMTP recipient-handshake stages for eligible recipients and return typed evidence to the central control plane." "Python, isolated SMTP workers" "Ongoing"
+            p2Smtp = container "P2 SMTP Execution Plane" "Status: ONGOING. Will execute conservative SMTP recipient-handshake stages for eligible recipients and return typed evidence to the central control plane." "Python, isolated SMTP workers" "Ongoing"
             blog = container "WordPress Blog" "Provides editorial content under the blog route and remains isolated from application authority." "WordPress" "Operational,Editorial"
         }
 
