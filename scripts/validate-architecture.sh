@@ -50,7 +50,7 @@ assert_count 1 'p2Smtp = container .*"Status: ONGOING[.]' "${WORKSPACE_FILE}" 't
 assert_count 1 'p2Smtp = container .*"Ongoing"[[:space:]]*$' "${WORKSPACE_FILE}" 'the P2 Ongoing tag'
 
 if awk '
-    /^[[:space:]]*[^[:space:]]+[[:space:]]*->[[:space:]]*[^[:space:]]+/ && /p2Smtp/ {
+    /^[[:space:]]*([^[:space:]=]+[[:space:]]*=[[:space:]]*)?(p2Smtp[[:space:]]*->[[:space:]]*[^[:space:]]+|[^[:space:]=]+[[:space:]]*->[[:space:]]*p2Smtp)([[:space:]]|$)/ {
         found = 1
         if ($0 !~ /"Ongoing"[[:space:]]*$/) invalid = 1
     }
