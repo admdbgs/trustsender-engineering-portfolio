@@ -1,0 +1,49 @@
+# Operating-system files
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# Editors and IDEs
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# Temporary files and logs
+*.tmp
+*.temp
+*.log
+tmp/
+temp/
+
+# Build output
+build/
+dist/
+out/
+.next/
+coverage/
+
+# Generated caches
+.cache/
+.pytest_cache/
+__pycache__/
+*.py[cod]
+node_modules/
+
+# Java archives
+*.jar
+*.war
+*.ear
+
+# D2 temporary output and caches
+.d2/
+.d2-cache/
+*.d2.tmp
+diagrams/.tmp/
+
+# Local environment files
+.env
+.env.*
+!.env.example
+*.local
