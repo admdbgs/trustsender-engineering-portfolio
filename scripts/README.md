@@ -2,7 +2,7 @@
 
 This directory contains deterministic utilities for the sanitized public architecture model:
 
-- [`validate-architecture.sh`](validate-architecture.sh) validates the canonical DSL with `structurizr/structurizr:2026.06.28-noble`, then checks repository-specific view, status, tag, and style invariants.
+- [`validate-architecture.sh`](validate-architecture.sh) validates the canonical DSL with `structurizr/structurizr:2026.06.28-noble`, exports it to temporary compiled Structurizr JSON, checks repository semantic invariants against that JSON, and removes the JSON after validation. [`validate-architecture-json.py`](validate-architecture-json.py) is the internal standard-library semantic checker; no compiled JSON is committed.
 - [`render-architecture.sh`](render-architecture.sh) renders two dark-mode diagram previews with `structurizr/structurizr:2026.06.28-playwright`. Each preview is accompanied by an automatically generated key/legend SVG, producing four artifact files in total. The script verifies all output files and their boundaries.
 
 Docker is required for both scripts. Local rendering additionally requires GNU/Linux or WSL, Bash 4 or newer, GNU findutils, and GNU coreutils. Stock macOS Bash and BSD utilities are not supported directly; macOS users should run the rendering command through a compatible GNU/Linux environment, such as a Linux container, virtual machine, or equivalent.

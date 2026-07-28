@@ -5,16 +5,25 @@ SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
 REPOSITORY_ROOT="$(cd -- "${SCRIPT_DIR}/.." && pwd)"
 WORKSPACE_FILE="${REPOSITORY_ROOT}/architecture/workspace.dsl"
 STYLES_FILE="${REPOSITORY_ROOT}/architecture/styles.dsl"
+JSON_OUTPUT_DIRECTORY="${REPOSITORY_ROOT}/build/architecture-json"
 VALIDATE_IMAGE="${STRUCTURIZR_VALIDATE_IMAGE:-structurizr/structurizr:2026.06.28-noble}"
 
-if ! command -v docker >/dev/null 2>&1; then
-    printf 'Error: Docker is required to validate the architecture.\n' >&2
-    exit 1
-fi
+cleanup() {
+    rm -rf -- "${JSON_OUTPUT_DIRECTORY}"
+}
+trap cleanup EXIT
 
 for required_file in "${WORKSPACE_FILE}" "${STYLES_FILE}"; do
     if [[ ! -f "${required_file}" ]]; then
         printf 'Error: required architecture file is missing: %s\n' "${required_file}" >&2
+        exit 1
+    fi
+done
+
+for required_command in docker python3; do
+    if ! command -v "${required_command}" >/dev/null 2>&1; then
+        printf 'Error: required architecture validation command is unavailable: %s\n' \
+            "${required_command}" >&2
         exit 1
     fi
 done
@@ -25,142 +34,51 @@ docker run --rm \
     "${VALIDATE_IMAGE}" \
     validate -workspace architecture/workspace.dsl
 
-printf 'Structurizr validation succeeded.\n'
+printf 'Official Structurizr DSL validation succeeded.\n'
 
-assert_count() {
-    local expected="$1"
-    local pattern="$2"
-    local file="$3"
-    local description="$4"
-    local actual
+rm -rf -- "${JSON_OUTPUT_DIRECTORY}"
+mkdir -p -- "${JSON_OUTPUT_DIRECTORY}"
 
-    actual="$(awk -v pattern="${pattern}" '$0 ~ pattern { count++ } END { print count + 0 }' "${file}")"
-    if [[ "${actual}" -ne "${expected}" ]]; then
-        printf 'Error: expected %s occurrence(s) of %s, found %s.\n' \
-            "${expected}" "${description}" "${actual}" >&2
-        exit 1
-    fi
-}
+docker run --rm \
+    --volume "${REPOSITORY_ROOT}:/usr/local/structurizr" \
+    --workdir /usr/local/structurizr \
+    "${VALIDATE_IMAGE}" \
+    export \
+    -workspace architecture/workspace.dsl \
+    -format json \
+    -output build/architecture-json
 
-assert_count 1 '^[[:space:]]*systemContext[[:space:]]' "${WORKSPACE_FILE}" 'a systemContext view'
-assert_count 1 '^[[:space:]]*container[[:space:]]+trustSender[[:space:]]' "${WORKSPACE_FILE}" 'a container view'
-assert_count 1 'systemContext trustSender "trustsender-system-context"' "${WORKSPACE_FILE}" 'the system-context key'
-assert_count 1 'container trustSender "trustsender-container-view"' "${WORKSPACE_FILE}" 'the container-view key'
+mapfile -t json_files < <(
+    python3 - "${JSON_OUTPUT_DIRECTORY}" <<'PY'
+import pathlib
+import sys
 
-if awk '
-    function active_code(text,    result, index_in_line, character, next_character, in_quote, escaped) {
-        result = ""
-        in_quote = 0
-        escaped = 0
+for path in sorted(pathlib.Path(sys.argv[1]).rglob("*.json")):
+    print(path)
+PY
+)
 
-        for (index_in_line = 1; index_in_line <= length(text); index_in_line++) {
-            character = substr(text, index_in_line, 1)
-            next_character = substr(text, index_in_line + 1, 1)
-
-            if (in_quote) {
-                result = result character
-                if (escaped) {
-                    escaped = 0
-                } else if (character == "\\") {
-                    escaped = 1
-                } else if (character == "\"") {
-                    in_quote = 0
-                }
-                continue
-            }
-
-            if (character == "\"") {
-                in_quote = 1
-                result = result character
-            } else if (character == "#" || (character == "/" && next_character == "/")) {
-                break
-            } else {
-                result = result character
-            }
-        }
-
-        return result
-    }
-
-    {
-        line = $0
-        while (1) {
-            if (in_block_comment) {
-                block_end = index(line, "*/")
-                if (!block_end) {
-                    line = ""
-                    break
-                }
-                line = substr(line, block_end + 2)
-                in_block_comment = 0
-            }
-
-            block_start = index(line, "/*")
-            if (!block_start) break
-
-            block_tail = substr(line, block_start + 2)
-            block_end = index(block_tail, "*/")
-            if (block_end) {
-                line = substr(line, 1, block_start - 1) substr(block_tail, block_end + 2)
-            } else {
-                line = substr(line, 1, block_start - 1)
-                in_block_comment = 1
-                break
-            }
-        }
-
-        line = active_code(line)
-
-        if (line ~ /^[[:space:]]*p2Smtp[[:space:]]*=[[:space:]]*container[[:space:]]/) {
-            declarations++
-            if (line ~ /"Status: ONGOING[.]/) ongoing_status++
-            if (line ~ /"Ongoing"[[:space:]]*$/) ongoing_tag++
-        }
-
-        if (line ~ /^[[:space:]]*([^[:space:]=]+[[:space:]]*=[[:space:]]*)?(p2Smtp[[:space:]]*->[[:space:]]*[^[:space:]]+|[^[:space:]=]+[[:space:]]*->[[:space:]]*p2Smtp)([[:space:]]|$)/) {
-            relationships++
-            if (line !~ /"Ongoing"[[:space:]]*$/) invalid_relationship = 1
-        }
-    }
-    END {
-        if (declarations != 1 || ongoing_status != 1 || ongoing_tag != 1) exit 2
-        if (!relationships || invalid_relationship) exit 3
-    }
-' "${WORKSPACE_FILE}"; then
-    :
-else
-    validation_status=$?
-    if [[ "${validation_status}" -eq 2 ]]; then
-        printf 'Error: expected exactly one active P2 container declaration with Status: ONGOING. and the Ongoing tag.\n' >&2
-    else
-        printf 'Error: every active P2 relationship must have the Ongoing tag.\n' >&2
-    fi
+if [[ "${#json_files[@]}" -ne 1 ]]; then
+    printf 'Error: expected exactly one compiled JSON file, found %s.\n' \
+        "${#json_files[@]}" >&2
     exit 1
 fi
 
-if ! awk '
-    /^relationship "Operational"[[:space:]]*\{/ { block = 1; next }
-    block && /^[[:space:]]*}/ { exit(found ? 0 : 1) }
-    block && /^[[:space:]]*style solid[[:space:]]*$/ { found = 1 }
-    END { if (!block || !found) exit 1 }
-' "${STYLES_FILE}"; then
-    printf 'Error: relationship "Operational" must contain "style solid".\n' >&2
+compiled_json="${json_files[0]}"
+if [[ -L "${compiled_json}" || ! -f "${compiled_json}" || ! -s "${compiled_json}" ]]; then
+    printf 'Error: compiled JSON must be a regular, non-symbolic-link, non-empty file: %s\n' \
+        "${compiled_json}" >&2
     exit 1
 fi
 
-if ! awk '
-    /^relationship "Ongoing"[[:space:]]*\{/ { block = 1; next }
-    block && /^[[:space:]]*}/ { exit(found ? 0 : 1) }
-    block && /^[[:space:]]*style dashed[[:space:]]*$/ { found = 1 }
-    END { if (!block || !found) exit 1 }
-' "${STYLES_FILE}"; then
-    printf 'Error: relationship "Ongoing" must contain "style dashed".\n' >&2
+resolved_output="$(python3 -c 'import pathlib, sys; print(pathlib.Path(sys.argv[1]).resolve())' "${JSON_OUTPUT_DIRECTORY}")"
+resolved_json="$(python3 -c 'import pathlib, sys; print(pathlib.Path(sys.argv[1]).resolve())' "${compiled_json}")"
+if [[ "${resolved_json}" != "${resolved_output}/"* ]]; then
+    printf 'Error: compiled JSON escaped the architecture JSON output directory: %s\n' \
+        "${compiled_json}" >&2
     exit 1
 fi
 
-if grep -Fq 'dashed true' "${WORKSPACE_FILE}" "${STYLES_FILE}"; then
-    printf 'Error: deprecated "dashed true" styling is not allowed.\n' >&2
-    exit 1
-fi
-
-printf 'Architecture repository invariants succeeded.\n'
+printf 'Compiled Structurizr JSON export succeeded.\n'
+python3 "${REPOSITORY_ROOT}/scripts/validate-architecture-json.py" "${compiled_json}"
+printf 'Compiled JSON semantic invariants succeeded.\n'
