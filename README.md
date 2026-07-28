@@ -9,9 +9,15 @@ The intended architecture stack includes Next.js, FastAPI, PostgreSQL, distribut
 ## Delivery status
 
 - **P1 distributed validation — Operational**
-- **P2 SMTP evolution — Ongoing implementation**
+- **P2 SMTP evolution — ONGOING**
 
 P2 is not represented as operational. Its documentation will evolve only as approved information becomes suitable for public release.
+
+## Architecture model
+
+The canonical public architecture is maintained as text in [`architecture/workspace.dsl`](architecture/workspace.dsl). Its sanitized scope and modeling conventions are documented in [`architecture/model-notes.md`](architecture/model-notes.md).
+
+Rendered diagrams will be added only after the textual model is reviewed.
 
 ## Roadmap
 
