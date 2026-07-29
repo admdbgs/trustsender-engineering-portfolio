@@ -1,6 +1,6 @@
 # TrustSender.io Engineering Portfolio
 
-This repository is a public, sanitized visual engineering portfolio and architecture whitepaper for TrustSender.io. It is intended to communicate approved system context and design decisions without exposing sensitive or proprietary material. The production source code and internal documentation remain private.
+This repository is a public, sanitized visual engineering portfolio and architecture whitepaper for TrustSender.io. It is intended to communicate approved system context and design decisions.
 
 ## Architecture at a glance
 
