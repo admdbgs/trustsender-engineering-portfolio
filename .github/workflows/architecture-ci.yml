@@ -36,6 +36,144 @@ jobs:
       - name: Validate architecture
         run: bash scripts/validate-architecture.sh
 
+      - name: Export compiled workspace for manual-layout bootstrap
+        shell: bash
+        run: |
+          set -euo pipefail
+          bootstrap_directory=build/manual-layout-bootstrap
+          export_directory="${bootstrap_directory}/exported"
+          final_workspace="${bootstrap_directory}/workspace.json"
+
+          rm -rf -- "${bootstrap_directory}"
+          mkdir -p -- "${export_directory}"
+
+          docker run --rm \
+            --volume "${GITHUB_WORKSPACE}:/usr/local/structurizr" \
+            --workdir /usr/local/structurizr \
+            structurizr/structurizr:2026.06.28-noble \
+            export \
+            -workspace architecture/workspace.dsl \
+            -format json \
+            -output build/manual-layout-bootstrap/exported
+
+          python3 - <<'PY'
+          import json
+          import os
+          from pathlib import Path
+          import shutil
+          import stat
+
+          export_directory = Path("build/manual-layout-bootstrap/exported")
+          final_workspace = Path("build/manual-layout-bootstrap/workspace.json")
+          resolved_export_directory = export_directory.resolve(strict=True)
+          candidates = list(export_directory.rglob("*.json"))
+
+          if len(candidates) != 1:
+              raise SystemExit(
+                  f"Expected exactly one exported JSON file; found {len(candidates)}."
+              )
+
+          candidate = candidates[0]
+          if candidate.is_symlink():
+              raise SystemExit("The exported JSON file must not be a symbolic link.")
+          candidate_stat = candidate.stat()
+          if not stat.S_ISREG(candidate_stat.st_mode) or candidate_stat.st_size == 0:
+              raise SystemExit("The exported JSON file must be regular and non-empty.")
+
+          resolved_candidate = candidate.resolve(strict=True)
+          if not resolved_candidate.is_relative_to(resolved_export_directory):
+              raise SystemExit("The exported JSON file escaped the expected output directory.")
+
+          resolved_final_parent = final_workspace.parent.resolve(strict=True)
+          if resolved_final_parent != resolved_export_directory.parent:
+              raise SystemExit("The final workspace path escaped the bootstrap directory.")
+
+          os.replace(resolved_candidate, final_workspace)
+          shutil.rmtree(export_directory)
+
+          with final_workspace.open(encoding="utf-8") as workspace_file:
+              workspace = json.load(workspace_file)
+
+          if not isinstance(workspace, dict):
+              raise SystemExit("The compiled workspace root must be an object.")
+          model = workspace.get("model")
+          views = workspace.get("views")
+          if not isinstance(model, dict):
+              raise SystemExit("The compiled workspace model must be an object.")
+          if not isinstance(views, dict):
+              raise SystemExit("The compiled workspace views must be an object.")
+
+          software_systems = model.get("softwareSystems")
+          if not isinstance(software_systems, list):
+              raise SystemExit("The compiled model must contain a softwareSystems array.")
+          trustsender_systems = [
+              system
+              for system in software_systems
+              if isinstance(system, dict) and system.get("name") == "TrustSender.io"
+          ]
+          if len(trustsender_systems) != 1:
+              raise SystemExit("Expected exactly one TrustSender.io software system.")
+
+          def objects(value):
+              if isinstance(value, dict):
+                  yield value
+                  for child in value.values():
+                      yield from objects(child)
+              elif isinstance(value, list):
+                  for child in value:
+                      yield from objects(child)
+
+          view_keys = [item.get("key") for item in objects(views) if "key" in item]
+          for required_key in (
+              "trustsender-system-context",
+              "trustsender-container-view",
+          ):
+              if view_keys.count(required_key) != 1:
+                  raise SystemExit(f"Expected view key {required_key} exactly once.")
+
+          p2_elements = [
+              item
+              for item in objects(model)
+              if item.get("name") == "P2 SMTP Execution Plane"
+          ]
+          if len(p2_elements) != 1:
+              raise SystemExit("Expected exactly one P2 SMTP Execution Plane element.")
+          p2 = p2_elements[0]
+          tags = p2.get("tags")
+          if isinstance(tags, str):
+              tags = [tag.strip() for tag in tags.split(",")]
+          if not isinstance(tags, list) or "Ongoing" not in tags:
+              raise SystemExit("P2 SMTP Execution Plane must contain the Ongoing tag.")
+          description = p2.get("description")
+          if not isinstance(description, str) or "Status: ONGOING." not in description:
+              raise SystemExit(
+                  "P2 SMTP Execution Plane must describe its status as ONGOING."
+              )
+
+          print("Compiled workspace bootstrap structure verified.")
+          PY
+
+          docker run --rm \
+            --volume "${GITHUB_WORKSPACE}:/usr/local/structurizr" \
+            --workdir /usr/local/structurizr \
+            structurizr/structurizr:2026.06.28-noble \
+            validate \
+            -workspace build/manual-layout-bootstrap/workspace.json
+
+          python3 scripts/validate-architecture-json.py \
+            build/manual-layout-bootstrap/workspace.json
+          sha256sum build/manual-layout-bootstrap/workspace.json
+
+          case "$(realpath "${final_workspace}")" in
+            "$(realpath "${bootstrap_directory}")"/*) ;;
+            *) echo "Error: compiled JSON escaped the bootstrap directory." >&2; exit 1 ;;
+          esac
+          if [[ -n "$(git status --porcelain=v1 -uall -- architecture/ diagrams/ scripts/)" ]]; then
+            echo "Error: generated content was written to a protected publication path." >&2
+            exit 1
+          fi
+          git diff --exit-code
+
       - name: Render dark-mode SVG previews
         run: bash scripts/render-architecture.sh
 
@@ -80,5 +218,18 @@ jobs:
         with:
           name: trustsender-architecture-dark-svg
           path: build/architecture-svg/*.svg
+          if-no-files-found: error
+          retention-days: 7
+
+      - name: Upload manual-layout bootstrap artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: trustsender-manual-layout-bootstrap
+          path: |
+            build/manual-layout-bootstrap/workspace.json
+            build/architecture-svg/trustsender-container-view.svg
+            build/architecture-svg/trustsender-container-view-key.svg
+            build/architecture-svg/trustsender-system-context.svg
+            build/architecture-svg/trustsender-system-context-key.svg
           if-no-files-found: error
           retention-days: 7
