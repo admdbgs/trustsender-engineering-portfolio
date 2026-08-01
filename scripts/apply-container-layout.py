@@ -29,6 +29,15 @@ LAYOUTS = {
     "Stripe": (2400, 100, 420, 280),
     "Brevo": (2900, 100, 420, 280),
 }
+PERSON_NAMES = {"Customer", "Platform Operator"}
+EXTERNAL_SYSTEM_NAMES = {
+    "Google Identity",
+    "Microsoft Identity",
+    "Stripe",
+    "Brevo",
+    "Internet Mail Infrastructure",
+}
+TRUSTSENDER_CONTAINER_NAMES = set(LAYOUTS) - PERSON_NAMES - EXTERNAL_SYSTEM_NAMES
 
 
 class LayoutError(Exception):
@@ -123,17 +132,11 @@ def transform(workspace: Any) -> Dict[str, Any]:
         if element_type in type_counts:
             type_counts[element_type] += 1
 
-    if type_counts["Person"] != 2:
-        raise LayoutError("model must contain exactly 2 people")
-    if type_counts["SoftwareSystem"] != 7:
-        raise LayoutError("model must contain exactly 7 software systems")
     trustsender_matches = by_name.get("TrustSender.io", [])
     if len(trustsender_matches) != 1 or trustsender_matches[0][1] != "SoftwareSystem":
         raise LayoutError("model must contain exactly one software system named 'TrustSender.io'")
     trustsender = trustsender_matches[0][0]
     containers = require_array(trustsender.get("containers"), "TrustSender.io containers")
-    if len(containers) != 8:
-        raise LayoutError("TrustSender.io must contain exactly 8 containers")
 
     for required_name in LAYOUTS:
         matches = by_name.get(required_name, [])
@@ -143,6 +146,37 @@ def transform(workspace: Any) -> Dict[str, Any]:
                     required_name, len(matches)
                 )
             )
+        element, element_type = matches[0]
+        if required_name in PERSON_NAMES and element_type != "Person":
+            raise LayoutError(
+                "required model element {!r} must be a Person; found {}".format(
+                    required_name, element_type
+                )
+            )
+        if required_name in EXTERNAL_SYSTEM_NAMES and element_type != "SoftwareSystem":
+            raise LayoutError(
+                "required external model element {!r} must be a SoftwareSystem; "
+                "found {}".format(required_name, element_type)
+            )
+        if required_name in TRUSTSENDER_CONTAINER_NAMES:
+            if element_type != "Container":
+                raise LayoutError(
+                    "required internal model element {!r} must be a Container; "
+                    "found {}".format(required_name, element_type)
+                )
+            if not any(element is container for container in containers):
+                raise LayoutError(
+                    "required Container {!r} must be directly under TrustSender.io".format(
+                        required_name
+                    )
+                )
+
+    if type_counts["Person"] != 2:
+        raise LayoutError("model must contain exactly 2 people")
+    if type_counts["SoftwareSystem"] != 7:
+        raise LayoutError("model must contain exactly 7 software systems")
+    if len(containers) != 8:
+        raise LayoutError("TrustSender.io must contain exactly 8 containers")
 
     source_context = keyed_view(views, "systemContextViews", SYSTEM_CONTEXT_KEY)
     source_container = keyed_view(views, "containerViews", CONTAINER_VIEW_KEY)
@@ -150,6 +184,12 @@ def transform(workspace: Any) -> Dict[str, Any]:
     source_relationships = require_array(
         source_container.get("relationships"), "Container View relationships"
     )
+    if len(source_relationships) != 19:
+        raise LayoutError(
+            "Container View must contain exactly 19 relationships; found {}".format(
+                len(source_relationships)
+            )
+        )
     if len(source_elements) != 15:
         raise LayoutError("Container View must contain exactly 15 visible elements")
 
