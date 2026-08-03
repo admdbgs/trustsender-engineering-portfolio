@@ -60,7 +60,10 @@ def fixture(prefix="alpha"):
     containers = []
     for index, name in enumerate(container_names):
         containers.append({"id": "{}-c{}".format(prefix, index), "name": name,
-                           "description": "Status: ONGOING. Synthetic." if name == "P2 SMTP Execution Plane" else "Synthetic.",
+                           "description": ("Status: ONGOING. Will execute conservative SMTP "
+                                           "recipient-handshake stages for eligible recipients "
+                                           "and return typed evidence to the central control plane."
+                                           if name == "P2 SMTP Execution Plane" else "Synthetic."),
                            "tags": "Ongoing" if name == "P2 SMTP Execution Plane" else "Operational",
                            "relationships": [], "components": []})
     internal = {"id": prefix + "-internal", "name": "TrustSender.io",
@@ -76,8 +79,11 @@ def fixture(prefix="alpha"):
         relationships.append((record, position, points))
     visible = [all_named[name] for name in LAYOUT]
     return {"model": {"people": people, "softwareSystems": systems},
-            "views": {"systemContextViews": [{"key": "trustsender-system-context", "automaticLayout": {"rankDirection": "LeftRight"}}],
+            "views": {"systemContextViews": [{"key": "trustsender-system-context",
+                                                "softwareSystemId": internal["id"],
+                                                "automaticLayout": {"rankDirection": "LeftRight"}}],
                       "containerViews": [{"key": "trustsender-container-view",
+                          "softwareSystemId": internal["id"],
                           "elements": [{"id": item["id"], "x": LAYOUT[item["name"]][0],
                                         "y": LAYOUT[item["name"]][1], "width": LAYOUT[item["name"]][2],
                                         "height": LAYOUT[item["name"]][3]} for item in visible],
@@ -183,7 +189,37 @@ class ContainerLayoutValidatorTests(unittest.TestCase):
 
     def test_invalid_p2_marker(self):
         value = fixture(); named(value, "P2 SMTP Execution Plane")["description"] = "Synthetic"
-        self.reject(value, "ONGOING")
+        self.reject(value, "exact approved ONGOING description")
+
+    def test_p2_description_rejects_operational_appendix(self):
+        value = fixture()
+        named(value, "P2 SMTP Execution Plane")["description"] += " SMTP validation is fully operational."
+        self.reject(value, "exact approved ONGOING description")
+
+    def test_p2_description_rejects_noncanonical_text_with_marker(self):
+        value = fixture()
+        named(value, "P2 SMTP Execution Plane")["description"] = "Status: ONGOING. Different wording."
+        self.reject(value, "exact approved ONGOING description")
+
+    def test_context_view_missing_software_system_id(self):
+        value = fixture()
+        del value["views"]["systemContextViews"][0]["softwareSystemId"]
+        self.reject(value, "trustsender-system-context.*softwareSystemId None.*TrustSender.io ID")
+
+    def test_context_view_wrong_software_system_id(self):
+        value = fixture()
+        value["views"]["systemContextViews"][0]["softwareSystemId"] = named(value, "Google Identity")["id"]
+        self.reject(value, "trustsender-system-context.*softwareSystemId.*TrustSender.io ID")
+
+    def test_container_view_missing_software_system_id(self):
+        value = fixture()
+        del view(value)["softwareSystemId"]
+        self.reject(value, "trustsender-container-view.*softwareSystemId None.*TrustSender.io ID")
+
+    def test_container_view_wrong_software_system_id(self):
+        value = fixture()
+        view(value)["softwareSystemId"] = named(value, "Google Identity")["id"]
+        self.reject(value, "trustsender-container-view.*softwareSystemId.*TrustSender.io ID")
 
     def test_relationship_endpoint_outside_view(self):
         value = fixture(); named(value, "Customer")["relationships"][0]["sourceId"] = named(value, "GitHub Actions")["id"]

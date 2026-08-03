@@ -10,6 +10,9 @@ import sys
 CONTEXT_KEY = "trustsender-system-context"
 CONTAINER_KEY = "trustsender-container-view"
 INTERNAL_SYSTEM = "TrustSender.io"
+P2_DESCRIPTION = ("Status: ONGOING. Will execute conservative SMTP recipient-handshake "
+                  "stages for eligible recipients and return typed evidence to the central "
+                  "control plane.")
 PEOPLE = {"Customer", "Platform Operator"}
 EXTERNAL_SYSTEMS = {"Google Identity", "Microsoft Identity", "Stripe", "Brevo",
                     "GitHub Actions", "Internet Mail Infrastructure"}
@@ -213,8 +216,12 @@ def validate_workspace(workspace):
     p2 = _named(by_name, "P2 SMTP Execution Plane", "Container", internal["id"])
     tags = _tokens(p2.get("tags"), "P2 SMTP Execution Plane")
     _require("Ongoing" in tags and "Operational" not in tags, "P2 SMTP Execution Plane status tags are invalid")
-    _require(isinstance(p2.get("description"), str) and p2["description"].count("Status: ONGOING.") == 1,
-             "P2 SMTP Execution Plane description must contain 'Status: ONGOING.' exactly once")
+    description = p2.get("description")
+    _require(isinstance(description, str),
+             "P2 SMTP Execution Plane description must be a string")
+    _require(description == P2_DESCRIPTION,
+             "P2 SMTP Execution Plane description does not equal the exact approved "
+             "ONGOING description")
     incident = [item for item in relationships if p2["id"] in (item["sourceId"], item["destinationId"])]
     _require(incident, "P2 SMTP Execution Plane must have at least one incident relationship")
     for item in incident:
@@ -225,6 +232,12 @@ def validate_workspace(workspace):
     views = workspace["views"]
     context = _view(views, "systemContextViews", CONTEXT_KEY, "System Context View")
     container = _view(views, "containerViews", CONTAINER_KEY, "Container View")
+    for target_view, key in ((context, CONTEXT_KEY), (container, CONTAINER_KEY)):
+        observed_system_id = target_view.get("softwareSystemId")
+        _require(isinstance(observed_system_id, str) and observed_system_id and
+                 observed_system_id == internal["id"],
+                 "view '{}' softwareSystemId {!r} must equal TrustSender.io ID {!r}".format(
+                     key, observed_system_id, internal["id"]))
     _require(context.get("automaticLayout") is not None, "System Context View automaticLayout must be non-null")
     _require("automaticLayout" not in container, "Container View must not contain automaticLayout")
     view_elements = _array(container, "elements", "Container View")
