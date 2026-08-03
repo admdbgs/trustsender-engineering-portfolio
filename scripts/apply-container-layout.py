@@ -16,7 +16,7 @@ INTERNAL_SYSTEM = "TrustSender.io"
 PEOPLE = {"Customer", "Platform Operator"}
 EXTERNAL_SYSTEMS = {
     "Google Identity", "Microsoft Identity", "Stripe", "Brevo",
-    "Internet Mail Infrastructure",
+    "GitHub Actions", "Internet Mail Infrastructure",
 }
 CONTAINERS = {
     "Edge and Routing", "Web Application", "Application API",
@@ -220,6 +220,11 @@ def transform(workspace):
         identifier = member["id"]
         _require(identifier in relationship_by_id,
                  "unresolved Container View relationship ID: {}".format(identifier))
+        relationship = relationship_by_id[identifier]
+        for endpoint_id in (relationship["sourceId"], relationship["destinationId"]):
+            _require(endpoint_id in element_ids,
+                     "Container View relationship {} has endpoint {} outside the "
+                     "Container View".format(identifier, endpoint_id))
         relationship_ids.append(identifier)
     _require(len(relationship_ids) == len(set(relationship_ids)),
              "duplicate Container View relationship membership")

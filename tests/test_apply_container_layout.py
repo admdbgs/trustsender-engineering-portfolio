@@ -112,6 +112,18 @@ def container_view(workspace):
     return workspace["views"]["containerViews"][0]
 
 
+def model_relationship(workspace, identifier):
+    owners = list(workspace["model"]["people"])
+    for system in workspace["model"]["softwareSystems"]:
+        owners.append(system)
+        owners.extend(system.get("containers", []))
+    for owner in owners:
+        for relationship in owner.get("relationships", []):
+            if relationship["id"] == identifier:
+                return relationship
+    raise AssertionError("missing synthetic relationship {}".format(identifier))
+
+
 class LayoutTransformerTests(unittest.TestCase):
     def setUp(self):
         self.temporary = tempfile.TemporaryDirectory()
@@ -194,8 +206,12 @@ class LayoutTransformerTests(unittest.TestCase):
 
     def test_incorrect_internal_container_type(self):
         value = fixture()
-        named(value, "Edge and Routing")["name"] = "Former Edge"
-        named(value, "GitHub Actions")["name"] = "Edge and Routing"
+        internal = named(value, "TrustSender.io")
+        edge = named(value, "Edge and Routing")
+        internal["containers"].remove(edge)
+        internal["containers"].append({"id": "replacement-edge-owner",
+                                       "name": "Replacement Container",
+                                       "relationships": [], "components": [edge]})
         self.assert_rejected(value, "Edge and Routing.*Container")
 
     def test_internal_container_owned_by_another_system(self):
@@ -238,6 +254,27 @@ class LayoutTransformerTests(unittest.TestCase):
         value = fixture()
         container_view(value)["elements"][0]["id"] = named(value, "GitHub Actions")["id"]
         self.assert_rejected(value, "must not include the GitHub Actions")
+
+    def test_missing_github_actions_software_system(self):
+        value = fixture()
+        named(value, "GitHub Actions")["name"] = "Arbitrary Seventh System"
+        self.assert_rejected(value, "GitHub Actions.*exactly once")
+
+    def test_container_view_relationship_source_outside_view(self):
+        value = fixture()
+        identifier = container_view(value)["relationships"][0]["id"]
+        github_id = named(value, "GitHub Actions")["id"]
+        model_relationship(value, identifier)["sourceId"] = github_id
+        self.assert_rejected(
+            value, "relationship {} has endpoint {} outside".format(identifier, github_id))
+
+    def test_container_view_relationship_destination_outside_view(self):
+        value = fixture()
+        identifier = container_view(value)["relationships"][0]["id"]
+        github_id = named(value, "GitHub Actions")["id"]
+        model_relationship(value, identifier)["destinationId"] = github_id
+        self.assert_rejected(
+            value, "relationship {} has endpoint {} outside".format(identifier, github_id))
 
     def test_p2_missing_ongoing_tag(self):
         value = fixture()
