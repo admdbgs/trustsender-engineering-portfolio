@@ -308,7 +308,7 @@ class LayoutTransformerTests(unittest.TestCase):
             self.assertEqual(2, len(key))
             self.assertTrue(all(isinstance(name, str) and name for name in key))
             self.assertNotIn("GitHub Actions", key)
-            self.assertIn(position, {25, 30, 35, 45, 55, 60, 65, 70, 76, 78, 95})
+            self.assertIn(position, {25, 30, 35, 45, 50, 55, 60, 65, 76, 78, 95})
             self.assertGreaterEqual(len(vertices), 1)
             for vertex in vertices:
                 self.assertEqual(2, len(vertex))
@@ -372,7 +372,7 @@ class LayoutTransformerTests(unittest.TestCase):
         expected_position_changes = {
             ("Job Control Plane", "Distributed P1 Worker Plane"): (45, 25),
             ("Distributed P1 Worker Plane", "Job Control Plane"): (65, 30),
-            ("Job Control Plane", "P2 SMTP Execution Plane"): (35, 70),
+            ("Job Control Plane", "P2 SMTP Execution Plane"): (35, 50),
             ("P2 SMTP Execution Plane", "Job Control Plane"): (55, 95),
         }
         self.assertEqual(19, len(POST_EXTERNAL_LABEL_ROUTES))
@@ -409,7 +409,7 @@ class LayoutTransformerTests(unittest.TestCase):
                          layout.ROUTES[("Distributed P1 Worker Plane", "Job Control Plane")])
 
     def test_p2_dispatch_route_position_and_vertices(self):
-        self.assertEqual((70, [(3330, 1680)]),
+        self.assertEqual((50, [(3330, 1680)]),
                          layout.ROUTES[("Job Control Plane", "P2 SMTP Execution Plane")])
 
     def test_p2_return_route_position_and_vertices(self):

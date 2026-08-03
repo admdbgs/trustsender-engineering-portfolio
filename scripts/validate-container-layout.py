@@ -49,7 +49,7 @@ ROUTES = {
     ("Job Control Plane", "Distributed P1 Worker Plane"): (25, [(3330, 1650), (3330, 1050)]),
     ("Distributed P1 Worker Plane", "Internet Mail Infrastructure"): (55, [(4130, 1050), (4130, 1400)]),
     ("Distributed P1 Worker Plane", "Job Control Plane"): (30, [(3270, 1050), (3270, 1650)]),
-    ("Job Control Plane", "P2 SMTP Execution Plane"): (70, [(3330, 1680)]),
+    ("Job Control Plane", "P2 SMTP Execution Plane"): (50, [(3330, 1680)]),
     ("P2 SMTP Execution Plane", "Internet Mail Infrastructure"): (45, [(4210, 1750), (4210, 1400)]),
     ("P2 SMTP Execution Plane", "Job Control Plane"): (95, [(3330, 1760)]),
 }
