@@ -33,7 +33,7 @@ The Container View shows the operational application, data, editorial, control-p
 
 ## Architecture validation
 
-GitHub Actions validates the canonical Structurizr DSL and generates dark-mode architecture previews for review. Publication-ready SVGs are committed only after model validation, visual inspection, and public-safety inspection.
+GitHub Actions validates the canonical Structurizr DSL, compiles it to JSON, applies the reviewed deterministic Container View layout, validates the transformed workspace, and generates the official dark-mode architecture previews for review. Publication-ready SVGs are committed only after model validation, visual inspection, and public-safety inspection.
 
 ## Roadmap
 
