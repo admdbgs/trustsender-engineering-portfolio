@@ -87,3 +87,16 @@ jobs:
           path: build/architecture-svg/*.svg
           if-no-files-found: error
           retention-days: 7
+
+      - name: Build manual-layout candidate
+        run: bash scripts/build-container-layout-candidate.sh
+
+      - name: Upload manual-layout candidate
+        uses: actions/upload-artifact@v4
+        with:
+          name: trustsender-container-layout-candidate
+          path: |
+            build/container-layout-candidate/transformed-json/workspace.json
+            build/container-layout-candidate-svg/*.svg
+          if-no-files-found: error
+          retention-days: 7
