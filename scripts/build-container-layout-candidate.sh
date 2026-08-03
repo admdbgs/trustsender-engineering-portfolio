@@ -230,6 +230,42 @@ for index in "${!expected_svg_filenames[@]}"; do
     fi
 done
 
+python3 - "${CANDIDATE_SVG_DIRECTORY}/trustsender-container-view.svg" <<'PY'
+import sys
+import xml.etree.ElementTree as ET
+
+
+path = sys.argv[1]
+try:
+    root = ET.parse(path).getroot()
+except (ET.ParseError, OSError) as error:
+    raise SystemExit("Error: unable to parse candidate Container View SVG {}: {}".format(
+        path, error))
+
+local_name = root.tag.rsplit("}", 1)[-1]
+if local_name != "svg":
+    raise SystemExit("Error: candidate Container View XML root local name is {!r}; expected 'svg'.".format(
+        local_name))
+
+def require_dimension(name, expected):
+    observed = root.get(name)
+    normalized = observed[:-2] if observed is not None and observed.endswith("px") else observed
+    if normalized != str(expected):
+        raise SystemExit(
+            "Error: candidate Container View SVG {} is {!r}; expected exactly {} or {}px.".format(
+                name, observed, expected, expected))
+
+require_dimension("width", 5000)
+require_dimension("height", 2200)
+observed_view_box = root.get("viewBox")
+normalized_view_box = " ".join(observed_view_box.split()) if observed_view_box is not None else None
+if normalized_view_box != "0 0 5000 2200":
+    raise SystemExit(
+        "Error: candidate Container View SVG viewBox is {!r}; expected normalized value "
+        "'0 0 5000 2200'.".format(observed_view_box))
+PY
+printf 'Candidate Container View SVG canvas validation succeeded.\n'
+
 final_repository_status="$(git status --porcelain=v1 -uall -- . ':(exclude)build')"
 if [[ -n "${final_repository_status}" ]]; then
     printf 'Error: candidate execution modified or created repository content outside build/.\n%s\n' \

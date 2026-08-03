@@ -6,6 +6,7 @@ import json
 from pathlib import Path
 import tempfile
 import unittest
+from unittest import mock
 
 
 SCRIPT = Path(__file__).parents[1] / "scripts" / "apply-container-layout.py"
@@ -73,6 +74,7 @@ def fixture():
     }
     container_view = {
         "key": "trustsender-container-view", "automaticLayout": {"rankDirection": "LeftRight"},
+        "dimensions": {"width": 2000, "height": 2000},
         "elements": [{"id": item["id"], "x": -1, "y": -1} for item in visible],
         "relationships": [
             {"id": item["id"], "routing": "Direct", "position": -99,
@@ -157,6 +159,8 @@ class LayoutTransformerTests(unittest.TestCase):
         self.assertEqual([item["id"] for item in original_container["relationships"]],
                          [item["id"] for item in result_container["relationships"]])
         self.assertNotIn("automaticLayout", result_container)
+        self.assertEqual({"width": 5000, "height": 2200},
+                         result_container["dimensions"])
         self.assertIn("automaticLayout", transformed["views"]["systemContextViews"][0])
         id_to_name = {named(original, name)["id"]: name for name in layout.LAYOUT}
         for member in result_container["elements"]:
@@ -188,6 +192,34 @@ class LayoutTransformerTests(unittest.TestCase):
         self.assertFalse(first.read_bytes().endswith(b"\n\n"))
         self.assertEqual(original_bytes, source.read_bytes())
         self.assertEqual(expected_input, original)
+
+    def test_source_dimensions_with_extra_field_are_replaced(self):
+        value = fixture()
+        container_view(value)["dimensions"]["units"] = "px"
+        transformed = layout.transform(value)
+        self.assertEqual({"width": 5000, "height": 2200},
+                         container_view(transformed)["dimensions"])
+
+    def test_boolean_source_dimensions_are_replaced(self):
+        value = fixture()
+        container_view(value)["dimensions"] = {"width": True, "height": False}
+        transformed = layout.transform(value)
+        self.assertEqual({"width": 5000, "height": 2200},
+                         container_view(transformed)["dimensions"])
+
+    def test_preservation_gate_rejects_unrelated_container_view_change(self):
+        real_deepcopy = copy.deepcopy
+
+        def altered_deepcopy(value):
+            result = real_deepcopy(value)
+            container_view(result)["title"] = "Unauthorized title change"
+            return result
+
+        with mock.patch.object(layout.copy, "deepcopy", side_effect=altered_deepcopy):
+            with self.assertRaisesRegex(
+                    layout.LayoutError,
+                    "preservation gate failed: unrelated Container View field changed"):
+                layout.transform(fixture())
 
     def test_unexpected_directional_relationship_pair(self):
         value = fixture()

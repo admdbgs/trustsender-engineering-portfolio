@@ -12,6 +12,8 @@ import tempfile
 
 CONTEXT_KEY = "trustsender-system-context"
 CONTAINER_KEY = "trustsender-container-view"
+CONTAINER_VIEW_WIDTH = 5000
+CONTAINER_VIEW_HEIGHT = 2200
 INTERNAL_SYSTEM = "TrustSender.io"
 PEOPLE = {"Customer", "Platform Operator"}
 EXTERNAL_SYSTEMS = {
@@ -280,6 +282,10 @@ def transform(workspace):
     result_container = _find_view(result["views"], "containerViews", CONTAINER_KEY,
                                   "Container View")
     result_container.pop("automaticLayout", None)
+    result_container["dimensions"] = {
+        "width": CONTAINER_VIEW_WIDTH,
+        "height": CONTAINER_VIEW_HEIGHT,
+    }
     for member in result_container["elements"]:
         name = by_id[member["id"]][0]["name"]
         member["x"], member["y"], member["width"], member["height"] = LAYOUT[name]
@@ -291,6 +297,20 @@ def transform(workspace):
 
     _require(result["model"] == workspace["model"], "preservation gate failed: model changed")
     _require(result_context == context, "preservation gate failed: System Context View changed")
+    source_view_preserved = {
+        key: value for key, value in container.items()
+        if key not in {"automaticLayout", "dimensions", "elements", "relationships"}
+    }
+    result_view_preserved = {
+        key: value for key, value in result_container.items()
+        if key not in {"automaticLayout", "dimensions", "elements", "relationships"}
+    }
+    _require(source_view_preserved == result_view_preserved,
+             "preservation gate failed: unrelated Container View field changed")
+    _require(result_container.get("dimensions") == {
+        "width": CONTAINER_VIEW_WIDTH,
+        "height": CONTAINER_VIEW_HEIGHT,
+    }, "preservation gate failed: Container View dimensions differ from approved canvas")
     _require([item["id"] for item in result_container["elements"]] == element_ids,
              "preservation gate failed: Container View element membership changed")
     _require([item["id"] for item in result_container["relationships"]] == relationship_ids,
