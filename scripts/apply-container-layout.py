@@ -41,6 +41,27 @@ LAYOUT = {
     "Stripe": (2400, 100, 420, 280),
     "Brevo": (2900, 100, 420, 280),
 }
+ROUTES = {
+    ("Customer", "Edge and Routing"): (35, [(560, 900), (560, 1190)]),
+    ("Platform Operator", "Edge and Routing"): (45, [(620, 1700), (620, 1310)]),
+    ("Edge and Routing", "Web Application"): (55, [(1230, 1180), (1230, 800)]),
+    ("Edge and Routing", "Application API"): (65, [(1600, 1250)]),
+    ("Edge and Routing", "WordPress Blog"): (35, [(1290, 1320), (1290, 1650)]),
+    ("Web Application", "Application API"): (45, [(1930, 800), (1930, 1180)]),
+    ("Application API", "PostgreSQL Database"): (55, [(2630, 1250), (2630, 810)]),
+    ("Application API", "Google Identity"): (65, [(2080, 560), (1610, 560)]),
+    ("Application API", "Microsoft Identity"): (35, [(2180, 500), (2110, 500)]),
+    ("Application API", "Stripe"): (45, [(2380, 440), (2610, 440)]),
+    ("Application API", "Brevo"): (55, [(2480, 500), (3110, 500)]),
+    ("Application API", "Job Control Plane"): (65, [(2280, 1450), (2980, 1450)]),
+    ("Job Control Plane", "PostgreSQL Database"): (35, [(3050, 1235)]),
+    ("Job Control Plane", "Distributed P1 Worker Plane"): (45, [(3330, 1650), (3330, 1050)]),
+    ("Distributed P1 Worker Plane", "Internet Mail Infrastructure"): (55, [(4130, 1050), (4130, 1400)]),
+    ("Distributed P1 Worker Plane", "Job Control Plane"): (65, [(3270, 1050), (3270, 1650)]),
+    ("Job Control Plane", "P2 SMTP Execution Plane"): (35, [(3330, 1680)]),
+    ("P2 SMTP Execution Plane", "Internet Mail Infrastructure"): (45, [(4210, 1750), (4210, 1400)]),
+    ("P2 SMTP Execution Plane", "Job Control Plane"): (55, [(3330, 1760)]),
+}
 
 
 class LayoutError(ValueError):
@@ -147,7 +168,7 @@ def _find_view(views, collection, key, label):
 
 
 def transform(workspace):
-    """Return a validated deep copy with deterministic element placement."""
+    """Return a validated deep copy with deterministic placement and routing."""
     _require(isinstance(workspace, dict), "workspace JSON root must be an object")
     _require("model" in workspace and isinstance(workspace.get("views"), dict),
              "unexpected workspace schema: model and views objects are required")
@@ -214,20 +235,44 @@ def transform(workspace):
              "Container View elements do not match the approved 15-element layout")
 
     relationship_ids = []
+    route_key_by_id = {}
+    observed_route_ids = {}
     for member in view_relationships:
         _require(isinstance(member, dict) and isinstance(member.get("id"), str),
                  "Container View relationship memberships must have string IDs")
         identifier = member["id"]
         _require(identifier in relationship_by_id,
                  "unresolved Container View relationship ID: {}".format(identifier))
+        _require(identifier not in relationship_ids,
+                 "duplicate Container View relationship membership")
         relationship = relationship_by_id[identifier]
-        for endpoint_id in (relationship["sourceId"], relationship["destinationId"]):
+        endpoint_ids = (relationship["sourceId"], relationship["destinationId"])
+        for endpoint_id in endpoint_ids:
+            _require(endpoint_id in by_id,
+                     "Container View relationship {} has unresolved endpoint {}".format(
+                         identifier, endpoint_id))
+        endpoint_names = [by_id[endpoint_id][0]["name"] for endpoint_id in endpoint_ids]
+        for endpoint_id in endpoint_ids:
             _require(endpoint_id in element_ids,
-                     "Container View relationship {} has endpoint {} outside the "
-                     "Container View".format(identifier, endpoint_id))
+                     "Container View relationship {} has endpoint {} outside the Container "
+                     "View ({} -> {})".format(identifier, endpoint_id, *endpoint_names))
+        route_key = tuple(endpoint_names)
+        _require(route_key not in observed_route_ids,
+                 "duplicate directional relationship {} -> {} (IDs {} and {})".format(
+                     route_key[0], route_key[1], observed_route_ids.get(route_key), identifier))
+        observed_route_ids[route_key] = identifier
+        route_key_by_id[identifier] = route_key
         relationship_ids.append(identifier)
     _require(len(relationship_ids) == len(set(relationship_ids)),
              "duplicate Container View relationship membership")
+    missing_routes = set(ROUTES) - set(observed_route_ids)
+    unexpected_routes = set(observed_route_ids) - set(ROUTES)
+    _require(not missing_routes and not unexpected_routes,
+             "Container View directional relationships differ from approved routes; "
+             "missing: {}; unexpected: {}".format(
+                 sorted("{} -> {}".format(*key) for key in missing_routes),
+                 sorted("{} -> {} (ID {})".format(key[0], key[1], observed_route_ids[key])
+                        for key in unexpected_routes)))
 
     result = copy.deepcopy(workspace)
     result_context = _find_view(result["views"], "systemContextViews", CONTEXT_KEY,
@@ -238,15 +283,43 @@ def transform(workspace):
     for member in result_container["elements"]:
         name = by_id[member["id"]][0]["name"]
         member["x"], member["y"], member["width"], member["height"] = LAYOUT[name]
+    for member in result_container["relationships"]:
+        position, vertices = ROUTES[route_key_by_id[member["id"]]]
+        member["routing"] = "Orthogonal"
+        member["position"] = position
+        member["vertices"] = [{"x": x, "y": y} for x, y in vertices]
 
     _require(result["model"] == workspace["model"], "preservation gate failed: model changed")
     _require(result_context == context, "preservation gate failed: System Context View changed")
-    _require(result_container["relationships"] == container["relationships"],
-             "preservation gate failed: Container View relationships changed")
     _require([item["id"] for item in result_container["elements"]] == element_ids,
              "preservation gate failed: Container View element membership changed")
     _require([item["id"] for item in result_container["relationships"]] == relationship_ids,
              "preservation gate failed: Container View relationship membership changed")
+    for source_member, result_member in zip(container["elements"],
+                                            result_container["elements"]):
+        source_preserved = {key: value for key, value in source_member.items()
+                            if key not in {"x", "y", "width", "height"}}
+        result_preserved = {key: value for key, value in result_member.items()
+                            if key not in {"x", "y", "width", "height"}}
+        _require(source_preserved == result_preserved,
+                 "preservation gate failed: non-layout fields changed for element {}".format(
+                     source_member["id"]))
+    for source_member, result_member in zip(container["relationships"],
+                                            result_container["relationships"]):
+        source_preserved = {key: value for key, value in source_member.items()
+                            if key not in {"routing", "position", "vertices"}}
+        result_preserved = {key: value for key, value in result_member.items()
+                            if key not in {"routing", "position", "vertices"}}
+        _require(source_preserved == result_preserved,
+                 "preservation gate failed: non-routing fields changed for relationship {}".format(
+                     source_member["id"]))
+        position, vertices = ROUTES[route_key_by_id[source_member["id"]]]
+        expected_route = {"routing": "Orthogonal", "position": position,
+                          "vertices": [{"x": x, "y": y} for x, y in vertices]}
+        actual_route = {key: result_member.get(key) for key in expected_route}
+        _require(actual_route == expected_route,
+                 "preservation gate failed: route differs for relationship {}".format(
+                     source_member["id"]))
     result_counts = _index_model(result["model"])
     _require(len(result_counts[0]) == len(elements) and len(result_counts[1]) == len(relationships),
              "preservation gate failed: model counts changed")
