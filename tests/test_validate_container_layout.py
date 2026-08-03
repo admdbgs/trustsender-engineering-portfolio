@@ -107,6 +107,31 @@ def view(value):
     return value["views"]["containerViews"][0]
 
 
+def relationship_membership(value, source_name, destination_name):
+    source_id = named(value, source_name)["id"]
+    destination_id = named(value, destination_name)["id"]
+    model_matches = [
+        relationship
+        for relationship in named(value, source_name).get("relationships", [])
+        if relationship["sourceId"] == source_id
+        and relationship["destinationId"] == destination_id
+    ]
+    if len(model_matches) != 1:
+        raise AssertionError(
+            "expected one {} -> {} model relationship".format(
+                source_name, destination_name))
+    relationship_id = model_matches[0]["id"]
+    membership_matches = [
+        member for member in view(value)["relationships"]
+        if member["id"] == relationship_id
+    ]
+    if len(membership_matches) != 1:
+        raise AssertionError(
+            "expected one {} -> {} Container View membership".format(
+                source_name, destination_name))
+    return membership_matches[0]
+
+
 class ContainerLayoutValidatorTests(unittest.TestCase):
     def reject(self, value, pattern):
         with self.assertRaisesRegex(validator.ValidationError, pattern):
@@ -277,6 +302,28 @@ class ContainerLayoutValidatorTests(unittest.TestCase):
     def test_wrong_position(self):
         value = fixture(); view(value)["relationships"][0]["position"] = 99
         self.reject(value, "position 99")
+
+    def test_rejects_microsoft_identity_former_position(self):
+        value = fixture()
+        relationship_membership(
+            value, "Application API", "Microsoft Identity")["position"] = 35
+        self.reject(value, "position 35 does not equal approved 60")
+
+    def test_rejects_stripe_former_position(self):
+        value = fixture()
+        relationship_membership(value, "Application API", "Stripe")["position"] = 45
+        self.reject(value, "position 45 does not equal approved 78")
+
+    def test_rejects_brevo_former_position(self):
+        value = fixture()
+        relationship_membership(value, "Application API", "Brevo")["position"] = 55
+        self.reject(value, "position 55 does not equal approved 76")
+
+    def test_rejects_google_identity_nonapproved_position(self):
+        value = fixture()
+        relationship_membership(
+            value, "Application API", "Google Identity")["position"] = 64
+        self.reject(value, "position 64 does not equal approved 65")
 
     def test_missing_vertex(self):
         value = fixture(); view(value)["relationships"][0]["vertices"].pop()
