@@ -47,6 +47,31 @@ for coreutils_command in sort realpath sha256sum; do
     fi
 done
 
+RESOLVED_REPOSITORY_ROOT="$(realpath -- "${REPOSITORY_ROOT}")"
+REPOSITORY_ROOT="${RESOLVED_REPOSITORY_ROOT}"
+cd -- "${REPOSITORY_ROOT}"
+BUILD_DIRECTORY="${REPOSITORY_ROOT}/build"
+EXPECTED_BUILD_DIRECTORY="${RESOLVED_REPOSITORY_ROOT}/build"
+
+if [[ -L "${BUILD_DIRECTORY}" ]]; then
+    printf 'Error: unsafe build path is a symbolic link: %s\n' "${BUILD_DIRECTORY}" >&2
+    exit 1
+fi
+if [[ -e "${BUILD_DIRECTORY}" && ! -d "${BUILD_DIRECTORY}" ]]; then
+    printf 'Error: unsafe build path exists but is not a directory: %s\n' "${BUILD_DIRECTORY}" >&2
+    exit 1
+fi
+if [[ ! -e "${BUILD_DIRECTORY}" ]]; then
+    mkdir -- "${BUILD_DIRECTORY}"
+fi
+
+RESOLVED_BUILD_DIRECTORY="$(realpath -- "${BUILD_DIRECTORY}")"
+if [[ "${RESOLVED_BUILD_DIRECTORY}" != "${EXPECTED_BUILD_DIRECTORY}" ]]; then
+    printf 'Error: unsafe build path %s resolves to %s; expected exactly %s.\n' \
+        "${BUILD_DIRECTORY}" "${RESOLVED_BUILD_DIRECTORY}" "${EXPECTED_BUILD_DIRECTORY}" >&2
+    exit 1
+fi
+
 required_files=(
     architecture/workspace.dsl
     architecture/styles.dsl
@@ -62,12 +87,27 @@ for required_file in "${required_files[@]}"; do
 done
 
 for stale_directory in build/container-layout-candidate build/container-layout-candidate-svg; do
-    if [[ -L "${stale_directory}" ]]; then
-        printf 'Error: candidate output directory must not be a symbolic link: %s\n' "${stale_directory}" >&2
+    stale_directory_absolute="${REPOSITORY_ROOT}/${stale_directory}"
+    stale_parent_resolved="$(realpath -- "$(dirname -- "${stale_directory_absolute}")")"
+    if [[ "${stale_parent_resolved}" != "${RESOLVED_BUILD_DIRECTORY}" ]]; then
+        printf 'Error: unsafe candidate target parent for %s resolves to %s; expected exactly %s.\n' \
+            "${stale_directory_absolute}" "${stale_parent_resolved}" "${RESOLVED_BUILD_DIRECTORY}" >&2
         exit 1
     fi
-    if [[ -d "${stale_directory}" ]] && find "${stale_directory}" -type l -print -quit | grep -q .; then
-        printf 'Error: symbolic links are not allowed under candidate output directory: %s\n' "${stale_directory}" >&2
+    if [[ -L "${stale_directory_absolute}" ]]; then
+        printf 'Error: candidate output directory must not be a symbolic link: %s\n' \
+            "${stale_directory_absolute}" >&2
+        exit 1
+    fi
+    if [[ -e "${stale_directory_absolute}" && ! -d "${stale_directory_absolute}" ]]; then
+        printf 'Error: candidate output path exists but is not a directory: %s\n' \
+            "${stale_directory_absolute}" >&2
+        exit 1
+    fi
+    if [[ -d "${stale_directory_absolute}" ]] && \
+        find "${stale_directory_absolute}" -type l -print -quit | grep -q .; then
+        printf 'Error: symbolic links are not allowed under candidate output directory: %s\n' \
+            "${stale_directory_absolute}" >&2
         exit 1
     fi
 done
