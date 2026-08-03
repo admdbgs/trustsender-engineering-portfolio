@@ -35,13 +35,13 @@ jobs:
       - name: Check out repository
         uses: actions/checkout@v4
 
-      - name: Run layout transformer unit tests
+      - name: Run complete unit test suite
         run: python3 -m unittest discover -s tests -p 'test_*.py' -v
 
-      - name: Validate architecture
+      - name: Validate canonical architecture
         run: bash scripts/validate-architecture.sh
 
-      - name: Render dark-mode SVG previews
+      - name: Render approved architecture SVG previews
         run: bash scripts/render-architecture.sh
 
       - name: Independently verify preview outputs
@@ -75,6 +75,20 @@ jobs:
               exit 1
             }
           done
+          python3 - "${output_directory}/trustsender-container-view.svg" <<'PY'
+          import sys
+          import xml.etree.ElementTree as ET
+
+          root = ET.parse(sys.argv[1]).getroot()
+          for name, expected in (("width", "5000"), ("height", "2200")):
+              observed = root.get(name)
+              normalized = observed[:-2] if observed is not None and observed.endswith("px") else observed
+              if normalized != expected:
+                  raise SystemExit(f"Unexpected Container View SVG {name}: {observed!r}")
+          view_box = root.get("viewBox")
+          if view_box is None or " ".join(view_box.split()) != "0 0 5000 2200":
+              raise SystemExit(f"Unexpected Container View SVG viewBox: {view_box!r}")
+          PY
           if [[ -n "$(git status --porcelain --untracked-files=all -- diagrams/ '*.svg')" ]]; then
             echo "Error: generated SVG content was written under diagrams/." >&2
             exit 1
@@ -85,18 +99,5 @@ jobs:
         with:
           name: trustsender-architecture-dark-svg
           path: build/architecture-svg/*.svg
-          if-no-files-found: error
-          retention-days: 7
-
-      - name: Build manual-layout candidate
-        run: bash scripts/build-container-layout-candidate.sh
-
-      - name: Upload manual-layout candidate
-        uses: actions/upload-artifact@v4
-        with:
-          name: trustsender-container-layout-candidate
-          path: |
-            build/container-layout-candidate/transformed-json/workspace.json
-            build/container-layout-candidate-svg/*.svg
           if-no-files-found: error
           retention-days: 7
