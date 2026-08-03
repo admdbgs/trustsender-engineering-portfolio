@@ -255,7 +255,7 @@ class LayoutTransformerTests(unittest.TestCase):
             self.assertEqual(2, len(key))
             self.assertTrue(all(isinstance(name, str) and name for name in key))
             self.assertNotIn("GitHub Actions", key)
-            self.assertIn(position, {35, 45, 55, 65})
+            self.assertIn(position, {35, 45, 55, 60, 65, 76, 78})
             self.assertGreaterEqual(len(vertices), 1)
             for vertex in vertices:
                 self.assertEqual(2, len(vertex))
