@@ -84,6 +84,7 @@ def fixture(prefix="alpha"):
                                                 "automaticLayout": {"rankDirection": "LeftRight"}}],
                       "containerViews": [{"key": "trustsender-container-view",
                           "softwareSystemId": internal["id"],
+                          "dimensions": {"width": 5000, "height": 2200},
                           "elements": [{"id": item["id"], "x": LAYOUT[item["name"]][0],
                                         "y": LAYOUT[item["name"]][1], "width": LAYOUT[item["name"]][2],
                                         "height": LAYOUT[item["name"]][3]} for item in visible],
@@ -146,6 +147,42 @@ class ContainerLayoutValidatorTests(unittest.TestCase):
     def test_container_automatic_layout(self):
         value = fixture(); view(value)["automaticLayout"] = {}
         self.reject(value, "must not contain automaticLayout")
+
+    def test_missing_dimensions(self):
+        value = fixture(); del view(value)["dimensions"]
+        self.reject(value, "dimensions must be an object")
+
+    def test_dimensions_not_an_object(self):
+        value = fixture(); view(value)["dimensions"] = "5000x2200"
+        self.reject(value, "dimensions must be an object")
+
+    def test_dimensions_missing_width(self):
+        value = fixture(); del view(value)["dimensions"]["width"]
+        self.reject(value, "exactly width and height")
+
+    def test_dimensions_missing_height(self):
+        value = fixture(); del view(value)["dimensions"]["height"]
+        self.reject(value, "exactly width and height")
+
+    def test_incorrect_dimensions_width(self):
+        value = fixture(); view(value)["dimensions"]["width"] = 4999
+        self.reject(value, "width 4999 must equal 5000")
+
+    def test_incorrect_dimensions_height(self):
+        value = fixture(); view(value)["dimensions"]["height"] = 2199
+        self.reject(value, "height 2199 must equal 2200")
+
+    def test_boolean_dimensions_width(self):
+        value = fixture(); view(value)["dimensions"]["width"] = True
+        self.reject(value, "width True must equal 5000")
+
+    def test_boolean_dimensions_height(self):
+        value = fixture(); view(value)["dimensions"]["height"] = False
+        self.reject(value, "height False must equal 2200")
+
+    def test_extra_dimensions_field(self):
+        value = fixture(); view(value)["dimensions"]["units"] = "px"
+        self.reject(value, "exactly width and height")
 
     def test_context_automatic_layout_missing(self):
         value = fixture(); del value["views"]["systemContextViews"][0]["automaticLayout"]
@@ -296,6 +333,16 @@ class ContainerLayoutValidatorTests(unittest.TestCase):
             self.reject(value, "outside approved bounds")
         finally:
             validator.LAYOUT["Customer"] = original
+
+    def test_element_beyond_canvas(self):
+        value = fixture()
+        view(value)["elements"][0]["x"] = 5001
+        self.reject(value, "outside approved bounds")
+
+    def test_vertex_beyond_canvas(self):
+        value = fixture()
+        view(value)["relationships"][0]["vertices"][0]["x"] = 5001
+        self.reject(value, "outside bounds")
 
     def test_wrong_argument_count(self):
         self.assertEqual(2, validator.main([]))

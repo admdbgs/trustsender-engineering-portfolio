@@ -9,6 +9,8 @@ import sys
 
 CONTEXT_KEY = "trustsender-system-context"
 CONTAINER_KEY = "trustsender-container-view"
+CONTAINER_VIEW_WIDTH = 5000
+CONTAINER_VIEW_HEIGHT = 2200
 INTERNAL_SYSTEM = "TrustSender.io"
 P2_DESCRIPTION = ("Status: ONGOING. Will execute conservative SMTP recipient-handshake "
                   "stages for eligible recipients and return typed evidence to the central "
@@ -179,7 +181,8 @@ def validate_geometry(vertices, relationship_id, source, destination, rectangles
         _require(type(vertex["x"]) is int and type(vertex["y"]) is int,
                  "{} vertex {} coordinates must be integers".format(label, index))
         point = (vertex["x"], vertex["y"])
-        _require(0 <= point[0] <= 5000 and 0 <= point[1] <= 2000,
+        _require(0 <= point[0] <= CONTAINER_VIEW_WIDTH and
+                 0 <= point[1] <= CONTAINER_VIEW_HEIGHT,
                  "{} vertex {} {} is outside bounds".format(label, index, point))
         for name, rectangle in (LAYOUT if rectangles is None else rectangles).items():
             _require(not _inside(point, rectangle),
@@ -240,6 +243,17 @@ def validate_workspace(workspace):
                      key, observed_system_id, internal["id"]))
     _require(context.get("automaticLayout") is not None, "System Context View automaticLayout must be non-null")
     _require("automaticLayout" not in container, "Container View must not contain automaticLayout")
+    dimensions = container.get("dimensions")
+    _require(isinstance(dimensions, dict), "Container View dimensions must be an object")
+    _require(set(dimensions) == {"width", "height"},
+             "Container View dimensions must contain exactly width and height")
+    width, height = dimensions["width"], dimensions["height"]
+    _require(type(width) is int and width == CONTAINER_VIEW_WIDTH,
+             "Container View dimensions width {!r} must equal {} as a non-boolean integer".format(
+                 width, CONTAINER_VIEW_WIDTH))
+    _require(type(height) is int and height == CONTAINER_VIEW_HEIGHT,
+             "Container View dimensions height {!r} must equal {} as a non-boolean integer".format(
+                 height, CONTAINER_VIEW_HEIGHT))
     view_elements = _array(container, "elements", "Container View")
     view_relationships = _array(container, "relationships", "Container View")
     _require(len(view_elements) == 15, "Container View must contain exactly 15 elements")
@@ -257,7 +271,9 @@ def validate_workspace(workspace):
         values = tuple(member.get(key) for key in ("x", "y", "width", "height"))
         _require(all(type(value) is int for value in values), "element '{}' geometry must use integers".format(name))
         x, y, width, height = values
-        _require(x >= 0 and y >= 0 and width > 0 and height > 0 and x + width <= 5000 and y + height <= 2000,
+        _require(x >= 0 and y >= 0 and width > 0 and height > 0 and
+                 x + width <= CONTAINER_VIEW_WIDTH and
+                 y + height <= CONTAINER_VIEW_HEIGHT,
                  "element '{}' rectangle {} is outside approved bounds".format(name, values))
         _require(values == LAYOUT[name], "element '{}' geometry {} does not equal approved {}".format(name, values, LAYOUT[name]))
         element_ids.append(identifier)
