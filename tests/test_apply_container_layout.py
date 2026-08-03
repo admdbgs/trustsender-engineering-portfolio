@@ -48,21 +48,14 @@ def fixture():
     systems.append(internal)
 
     visible = people + containers + systems[:5]
+    route_names = list(layout.ROUTES)
     relationship_pairs = []
-    for index in range(16):
-        source = visible[index % len(visible)]
-        destination = visible[(index + 1) % len(visible)]
+    for source_name, destination_name in route_names:
+        source = next(item for item in visible if item["name"] == source_name)
+        destination = next(item for item in visible if item["name"] == destination_name)
         tags = ("Ongoing" if "P2 SMTP Execution Plane" in
                 (source["name"], destination["name"]) else "Operational")
         relationship_pairs.append((source, destination, tags))
-    p2 = next(item for item in containers if item["name"] == "P2 SMTP Execution Plane")
-    mail = next(item for item in systems if item["name"] == "Internet Mail Infrastructure")
-    control = next(item for item in containers if item["name"] == "Job Control Plane")
-    relationship_pairs.extend([
-        (control, p2, "Ongoing"),
-        (p2, mail, "Ongoing"),
-        (p2, control, "Ongoing"),
-    ])
     relationships = []
     for index, (source, destination, tags) in enumerate(relationship_pairs, 701):
         relationship = {
@@ -82,7 +75,8 @@ def fixture():
         "key": "trustsender-container-view", "automaticLayout": {"rankDirection": "LeftRight"},
         "elements": [{"id": item["id"], "x": -1, "y": -1} for item in visible],
         "relationships": [
-            {"id": item["id"], "routing": "Direct", "vertices": [{"x": 9, "y": 8}]}
+            {"id": item["id"], "routing": "Direct", "position": -99,
+             "vertices": [{"x": 9, "y": 8}], "opacity": 73}
             for item in relationships
         ],
         "title": "Synthetic containers", "paperSize": "A4_Landscape",
@@ -158,7 +152,6 @@ class LayoutTransformerTests(unittest.TestCase):
         self.assertEqual(original["model"], transformed["model"])
         self.assertEqual(original["views"]["systemContextViews"],
                          transformed["views"]["systemContextViews"])
-        self.assertEqual(original_container["relationships"], result_container["relationships"])
         self.assertEqual([item["id"] for item in original_container["elements"]],
                          [item["id"] for item in result_container["elements"]])
         self.assertEqual([item["id"] for item in original_container["relationships"]],
@@ -170,11 +163,74 @@ class LayoutTransformerTests(unittest.TestCase):
             expected = layout.LAYOUT[id_to_name[member["id"]]]
             self.assertEqual(expected, (member["x"], member["y"],
                                         member["width"], member["height"]))
+        for source_member, result_member in zip(original_container["relationships"],
+                                                result_container["relationships"]):
+            relationship = model_relationship(original, source_member["id"])
+            route_key = (next(name for name in layout.LAYOUT
+                              if named(original, name)["id"] == relationship["sourceId"]),
+                         next(name for name in layout.LAYOUT
+                              if named(original, name)["id"] == relationship["destinationId"]))
+            position, vertices = layout.ROUTES[route_key]
+            self.assertEqual("Orthogonal", result_member["routing"])
+            self.assertEqual(position, result_member["position"])
+            self.assertEqual([{"x": x, "y": y} for x, y in vertices],
+                             result_member["vertices"])
+            self.assertEqual(73, result_member["opacity"])
+            self.assertEqual({key: value for key, value in source_member.items()
+                              if key not in {"routing", "position", "vertices"}},
+                             {key: value for key, value in result_member.items()
+                              if key not in {"routing", "position", "vertices"}})
         self.assertEqual(first.read_bytes(), second.read_bytes())
+        third = self.directory / "third.json"
+        layout.apply_layout(first, third)
+        self.assertEqual(first.read_bytes(), third.read_bytes())
         self.assertTrue(first.read_bytes().endswith(b"\n"))
         self.assertFalse(first.read_bytes().endswith(b"\n\n"))
         self.assertEqual(original_bytes, source.read_bytes())
         self.assertEqual(expected_input, original)
+
+    def test_unexpected_directional_relationship_pair(self):
+        value = fixture()
+        relationship = model_relationship(value, container_view(value)["relationships"][0]["id"])
+        relationship["destinationId"] = named(value, "Web Application")["id"]
+        self.assert_rejected(value, "unexpected:.*Customer -> Web Application")
+
+    def test_reversed_directional_relationship(self):
+        value = fixture()
+        identifier = container_view(value)["relationships"][0]["id"]
+        relationship = model_relationship(value, identifier)
+        relationship["sourceId"], relationship["destinationId"] = (relationship["destinationId"],
+                                                                    relationship["sourceId"])
+        self.assert_rejected(value, "unexpected:.*Edge and Routing -> Customer")
+
+    def test_duplicate_directional_relationship_pair(self):
+        value = fixture()
+        first = model_relationship(value, container_view(value)["relationships"][0]["id"])
+        second = model_relationship(value, container_view(value)["relationships"][1]["id"])
+        second["sourceId"] = first["sourceId"]
+        second["destinationId"] = first["destinationId"]
+        self.assert_rejected(value, "duplicate directional relationship Customer -> Edge and Routing")
+
+    def test_missing_expected_directional_relationship(self):
+        value = fixture()
+        relationship = model_relationship(value, container_view(value)["relationships"][0]["id"])
+        relationship["destinationId"] = named(value, "Web Application")["id"]
+        self.assert_rejected(value, "missing:.*Customer -> Edge and Routing")
+
+    def test_route_registry_structural_integrity(self):
+        self.assertEqual(19, len(layout.ROUTES))
+        for key, (position, vertices) in layout.ROUTES.items():
+            self.assertEqual(2, len(key))
+            self.assertTrue(all(isinstance(name, str) and name for name in key))
+            self.assertNotIn("GitHub Actions", key)
+            self.assertIn(position, {35, 45, 55, 65})
+            self.assertGreaterEqual(len(vertices), 1)
+            for vertex in vertices:
+                self.assertEqual(2, len(vertex))
+                self.assertTrue(all(type(coordinate) is int for coordinate in vertex))
+                x, y = vertex
+                for left, top, width, height in layout.LAYOUT.values():
+                    self.assertFalse(left < x < left + width and top < y < top + height)
 
     def test_invalid_json(self):
         source = self.directory / "input.json"
