@@ -38,12 +38,12 @@ ROUTES = [
     ("Application API", "Brevo", 76, [(2480, 500), (3110, 500)]),
     ("Application API", "Job Control Plane", 65, [(2280, 1450), (2980, 1450)]),
     ("Job Control Plane", "PostgreSQL Database", 35, [(3050, 1235)]),
-    ("Job Control Plane", "Distributed P1 Worker Plane", 45, [(3330, 1650), (3330, 1050)]),
+    ("Job Control Plane", "Distributed P1 Worker Plane", 25, [(3330, 1650), (3330, 1050)]),
     ("Distributed P1 Worker Plane", "Internet Mail Infrastructure", 55, [(4130, 1050), (4130, 1400)]),
-    ("Distributed P1 Worker Plane", "Job Control Plane", 65, [(3270, 1050), (3270, 1650)]),
-    ("Job Control Plane", "P2 SMTP Execution Plane", 35, [(3330, 1680)]),
+    ("Distributed P1 Worker Plane", "Job Control Plane", 30, [(3270, 1050), (3270, 1650)]),
+    ("Job Control Plane", "P2 SMTP Execution Plane", 70, [(3330, 1680)]),
     ("P2 SMTP Execution Plane", "Internet Mail Infrastructure", 45, [(4210, 1750), (4210, 1400)]),
-    ("P2 SMTP Execution Plane", "Job Control Plane", 55, [(3330, 1760)]),
+    ("P2 SMTP Execution Plane", "Job Control Plane", 95, [(3330, 1760)]),
 ]
 
 
@@ -318,6 +318,30 @@ class ContainerLayoutValidatorTests(unittest.TestCase):
         value = fixture()
         relationship_membership(value, "Application API", "Brevo")["position"] = 55
         self.reject(value, "position 55 does not equal approved 76")
+
+    def test_rejects_p1_dispatch_former_position(self):
+        value = fixture()
+        relationship_membership(
+            value, "Job Control Plane", "Distributed P1 Worker Plane")["position"] = 45
+        self.reject(value, "position 45 does not equal approved 25")
+
+    def test_rejects_p1_return_former_position(self):
+        value = fixture()
+        relationship_membership(
+            value, "Distributed P1 Worker Plane", "Job Control Plane")["position"] = 65
+        self.reject(value, "position 65 does not equal approved 30")
+
+    def test_rejects_p2_dispatch_former_position(self):
+        value = fixture()
+        relationship_membership(
+            value, "Job Control Plane", "P2 SMTP Execution Plane")["position"] = 35
+        self.reject(value, "position 35 does not equal approved 70")
+
+    def test_rejects_p2_return_former_position(self):
+        value = fixture()
+        relationship_membership(
+            value, "P2 SMTP Execution Plane", "Job Control Plane")["position"] = 55
+        self.reject(value, "position 55 does not equal approved 95")
 
     def test_rejects_google_identity_nonapproved_position(self):
         value = fixture()

@@ -15,7 +15,7 @@ layout = importlib.util.module_from_spec(SPEC)
 SPEC.loader.exec_module(layout)
 
 
-PREVIOUS_ROUTES = {
+PRE_EXTERNAL_LABEL_ROUTES = {
     ("Customer", "Edge and Routing"): (35, [(560, 900), (560, 1190)]),
     ("Platform Operator", "Edge and Routing"): (45, [(620, 1700), (620, 1310)]),
     ("Edge and Routing", "Web Application"): (55, [(1230, 1180), (1230, 800)]),
@@ -27,6 +27,32 @@ PREVIOUS_ROUTES = {
     ("Application API", "Microsoft Identity"): (35, [(2180, 500), (2110, 500)]),
     ("Application API", "Stripe"): (45, [(2380, 440), (2610, 440)]),
     ("Application API", "Brevo"): (55, [(2480, 500), (3110, 500)]),
+    ("Application API", "Job Control Plane"): (65, [(2280, 1450), (2980, 1450)]),
+    ("Job Control Plane", "PostgreSQL Database"): (35, [(3050, 1235)]),
+    ("Job Control Plane", "Distributed P1 Worker Plane"): (
+        45, [(3330, 1650), (3330, 1050)]),
+    ("Distributed P1 Worker Plane", "Internet Mail Infrastructure"): (
+        55, [(4130, 1050), (4130, 1400)]),
+    ("Distributed P1 Worker Plane", "Job Control Plane"): (
+        65, [(3270, 1050), (3270, 1650)]),
+    ("Job Control Plane", "P2 SMTP Execution Plane"): (35, [(3330, 1680)]),
+    ("P2 SMTP Execution Plane", "Internet Mail Infrastructure"): (
+        45, [(4210, 1750), (4210, 1400)]),
+    ("P2 SMTP Execution Plane", "Job Control Plane"): (55, [(3330, 1760)]),
+}
+
+POST_EXTERNAL_LABEL_ROUTES = {
+    ("Customer", "Edge and Routing"): (35, [(560, 900), (560, 1190)]),
+    ("Platform Operator", "Edge and Routing"): (45, [(620, 1700), (620, 1310)]),
+    ("Edge and Routing", "Web Application"): (55, [(1230, 1180), (1230, 800)]),
+    ("Edge and Routing", "Application API"): (65, [(1600, 1250)]),
+    ("Edge and Routing", "WordPress Blog"): (35, [(1290, 1320), (1290, 1650)]),
+    ("Web Application", "Application API"): (45, [(1930, 800), (1930, 1180)]),
+    ("Application API", "PostgreSQL Database"): (55, [(2630, 1250), (2630, 810)]),
+    ("Application API", "Google Identity"): (65, [(2080, 560), (1610, 560)]),
+    ("Application API", "Microsoft Identity"): (60, [(2180, 500), (2110, 500)]),
+    ("Application API", "Stripe"): (78, [(2380, 440), (2610, 440)]),
+    ("Application API", "Brevo"): (76, [(2480, 500), (3110, 500)]),
     ("Application API", "Job Control Plane"): (65, [(2280, 1450), (2980, 1450)]),
     ("Job Control Plane", "PostgreSQL Database"): (35, [(3050, 1235)]),
     ("Job Control Plane", "Distributed P1 Worker Plane"): (
@@ -282,7 +308,7 @@ class LayoutTransformerTests(unittest.TestCase):
             self.assertEqual(2, len(key))
             self.assertTrue(all(isinstance(name, str) and name for name in key))
             self.assertNotIn("GitHub Actions", key)
-            self.assertIn(position, {35, 45, 55, 60, 65, 76, 78})
+            self.assertIn(position, {25, 30, 35, 45, 55, 60, 65, 70, 76, 78, 95})
             self.assertGreaterEqual(len(vertices), 1)
             for vertex in vertices:
                 self.assertEqual(2, len(vertex))
@@ -315,37 +341,80 @@ class LayoutTransformerTests(unittest.TestCase):
             layout.ROUTES[("Application API", "Google Identity")],
         )
 
-    def test_only_three_external_label_positions_changed_from_previous_routes(self):
+    def test_pr12_changed_only_three_external_label_positions(self):
         expected_position_changes = {
             ("Application API", "Microsoft Identity"): (35, 60),
             ("Application API", "Stripe"): (45, 78),
             ("Application API", "Brevo"): (55, 76),
         }
-
-        self.assertEqual(19, len(PREVIOUS_ROUTES))
-        self.assertEqual(19, len(layout.ROUTES))
-        self.assertEqual(set(PREVIOUS_ROUTES), set(layout.ROUTES))
-
+        self.assertEqual(19, len(PRE_EXTERNAL_LABEL_ROUTES))
+        self.assertEqual(19, len(POST_EXTERNAL_LABEL_ROUTES))
+        self.assertEqual(set(PRE_EXTERNAL_LABEL_ROUTES), set(POST_EXTERNAL_LABEL_ROUTES))
         position_changes = {
-            key: (PREVIOUS_ROUTES[key][0], layout.ROUTES[key][0])
-            for key in PREVIOUS_ROUTES
-            if PREVIOUS_ROUTES[key][0] != layout.ROUTES[key][0]
+            key: (PRE_EXTERNAL_LABEL_ROUTES[key][0], POST_EXTERNAL_LABEL_ROUTES[key][0])
+            for key in PRE_EXTERNAL_LABEL_ROUTES
+            if PRE_EXTERNAL_LABEL_ROUTES[key][0] != POST_EXTERNAL_LABEL_ROUTES[key][0]
         }
         vertex_changes = {
-            key for key in PREVIOUS_ROUTES
-            if PREVIOUS_ROUTES[key][1] != layout.ROUTES[key][1]
+            key for key in PRE_EXTERNAL_LABEL_ROUTES
+            if PRE_EXTERNAL_LABEL_ROUTES[key][1] != POST_EXTERNAL_LABEL_ROUTES[key][1]
         }
         self.assertEqual(expected_position_changes, position_changes)
         self.assertEqual(set(), vertex_changes)
-
-        google_key = ("Application API", "Google Identity")
-        self.assertEqual(PREVIOUS_ROUTES[google_key], layout.ROUTES[google_key])
-        unchanged_keys = set(PREVIOUS_ROUTES) - set(expected_position_changes)
+        unchanged_keys = set(PRE_EXTERNAL_LABEL_ROUTES) - set(expected_position_changes)
         self.assertEqual(16, len(unchanged_keys))
         self.assertEqual(
-            {key: PREVIOUS_ROUTES[key] for key in unchanged_keys},
+            {key: PRE_EXTERNAL_LABEL_ROUTES[key] for key in unchanged_keys},
+            {key: POST_EXTERNAL_LABEL_ROUTES[key] for key in unchanged_keys},
+        )
+
+    def test_control_plane_change_has_exactly_four_positions_and_no_vertices(self):
+        expected_position_changes = {
+            ("Job Control Plane", "Distributed P1 Worker Plane"): (45, 25),
+            ("Distributed P1 Worker Plane", "Job Control Plane"): (65, 30),
+            ("Job Control Plane", "P2 SMTP Execution Plane"): (35, 70),
+            ("P2 SMTP Execution Plane", "Job Control Plane"): (55, 95),
+        }
+        self.assertEqual(19, len(POST_EXTERNAL_LABEL_ROUTES))
+        self.assertEqual(19, len(layout.ROUTES))
+        self.assertEqual(set(POST_EXTERNAL_LABEL_ROUTES), set(layout.ROUTES))
+        position_changes = {
+            key: (POST_EXTERNAL_LABEL_ROUTES[key][0], layout.ROUTES[key][0])
+            for key in POST_EXTERNAL_LABEL_ROUTES
+            if POST_EXTERNAL_LABEL_ROUTES[key][0] != layout.ROUTES[key][0]
+        }
+        vertex_changes = {
+            key for key in POST_EXTERNAL_LABEL_ROUTES
+            if POST_EXTERNAL_LABEL_ROUTES[key][1] != layout.ROUTES[key][1]
+        }
+        self.assertEqual(expected_position_changes, position_changes)
+        self.assertEqual(set(), vertex_changes)
+        unchanged_keys = set(POST_EXTERNAL_LABEL_ROUTES) - set(expected_position_changes)
+        self.assertEqual(15, len(unchanged_keys))
+        self.assertEqual(
+            {key: POST_EXTERNAL_LABEL_ROUTES[key] for key in unchanged_keys},
             {key: layout.ROUTES[key] for key in unchanged_keys},
         )
+        for key in (("Application API", "Microsoft Identity"),
+                    ("Application API", "Stripe"),
+                    ("Application API", "Brevo")):
+            self.assertEqual(POST_EXTERNAL_LABEL_ROUTES[key], layout.ROUTES[key])
+
+    def test_p1_dispatch_route_position_and_vertices(self):
+        self.assertEqual((25, [(3330, 1650), (3330, 1050)]),
+                         layout.ROUTES[("Job Control Plane", "Distributed P1 Worker Plane")])
+
+    def test_p1_return_route_position_and_vertices(self):
+        self.assertEqual((30, [(3270, 1050), (3270, 1650)]),
+                         layout.ROUTES[("Distributed P1 Worker Plane", "Job Control Plane")])
+
+    def test_p2_dispatch_route_position_and_vertices(self):
+        self.assertEqual((70, [(3330, 1680)]),
+                         layout.ROUTES[("Job Control Plane", "P2 SMTP Execution Plane")])
+
+    def test_p2_return_route_position_and_vertices(self):
+        self.assertEqual((95, [(3330, 1760)]),
+                         layout.ROUTES[("P2 SMTP Execution Plane", "Job Control Plane")])
 
     def test_invalid_json(self):
         source = self.directory / "input.json"
