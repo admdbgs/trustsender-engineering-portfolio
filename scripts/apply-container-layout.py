@@ -57,12 +57,12 @@ ROUTES = {
     ("Application API", "Brevo"): (76, [(2480, 500), (3110, 500)]),
     ("Application API", "Job Control Plane"): (65, [(2280, 1450), (2980, 1450)]),
     ("Job Control Plane", "PostgreSQL Database"): (35, [(3050, 1235)]),
-    ("Job Control Plane", "Distributed P1 Worker Plane"): (45, [(3330, 1650), (3330, 1050)]),
+    ("Job Control Plane", "Distributed P1 Worker Plane"): (25, [(3330, 1650), (3330, 1050)]),
     ("Distributed P1 Worker Plane", "Internet Mail Infrastructure"): (55, [(4130, 1050), (4130, 1400)]),
-    ("Distributed P1 Worker Plane", "Job Control Plane"): (65, [(3270, 1050), (3270, 1650)]),
-    ("Job Control Plane", "P2 SMTP Execution Plane"): (35, [(3330, 1680)]),
+    ("Distributed P1 Worker Plane", "Job Control Plane"): (30, [(3270, 1050), (3270, 1650)]),
+    ("Job Control Plane", "P2 SMTP Execution Plane"): (50, [(3330, 1680)]),
     ("P2 SMTP Execution Plane", "Internet Mail Infrastructure"): (45, [(4210, 1750), (4210, 1400)]),
-    ("P2 SMTP Execution Plane", "Job Control Plane"): (55, [(3330, 1760)]),
+    ("P2 SMTP Execution Plane", "Job Control Plane"): (95, [(3330, 1760)]),
 }
 
 
