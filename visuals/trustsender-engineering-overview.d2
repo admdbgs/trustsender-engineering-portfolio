@@ -5,10 +5,17 @@ vars: {
   }
 }
 
-title: "TrustSender.io Engineering Overview"
-subtitle: "P1 distributed validation is operational; P2 SMTP evolution remains ONGOING."
-
-direction: right
+header: "TrustSender.io Engineering Overview\nP1 distributed validation is operational; P2 SMTP evolution remains ONGOING." {
+  shape: text
+  near: top-center
+  style: {
+    stroke: transparent
+    fill: transparent
+    font-color: "#edf3ff"
+    font-size: 28
+    bold: true
+  }
+}
 
 classes: {
   operational: {
@@ -49,91 +56,185 @@ classes: {
     style: {
       stroke: "#334155"
       stroke-width: 2
+      border-radius: 12
       fill: "#0f172a"
       font-color: "#cbd5e1"
+      font-size: 18
+      bold: true
     }
   }
 }
 
-users: {
-  label: "1. Users"
-  class: area
-  customer: "Customer" { class: operational }
-  operator: "Platform Operator" { class: operational }
-}
+composition: {
+  label: ""
+  grid-rows: 2
+  style.fill: transparent
+  style.stroke: transparent
 
-experience: {
-  label: "2. Experience and Routing\nPublic access and experience"
-  class: area
-  edge: "Edge and Routing" { class: operational }
-  web: "Web Application" { class: operational }
-  blog: "WordPress Blog\nEditorial route; isolated from application authority" { class: operational }
-}
+  upper: {
+    label: ""
+    grid-columns: 2
+    style.fill: transparent
+    style.stroke: transparent
 
-authority: {
-  label: "3. Application Authority and Data\nApplication authority"
-  class: area
-  api: "Application API" { class: operational }
-  db: "PostgreSQL Database\nAuthoritative data store" { class: data }
-}
+    users: {
+      label: "1. Users"
+      class: area
+      grid-rows: 2
+      customer: "Customer" {
+        class: operational
+        width: 190
+        height: 70
+      }
+      operator: "Platform Operator" {
+        class: operational
+        width: 190
+        height: 70
+      }
+    }
 
-validation: {
-  label: "4. Validation Control and Execution"
-  class: area
-  control: {
-    label: "Job orchestration"
-    class: area
-    job: "Job Control Plane" { class: operational }
+    experience: {
+      label: "2. Experience and Routing\nPublic access and experience"
+      class: area
+      grid-rows: 2
+      edge: "Edge and Routing" {
+        class: operational
+        width: 220
+        height: 90
+      }
+      web: "Web Application" {
+        class: operational
+        width: 230
+        height: 90
+      }
+      blog: "WordPress Blog\nEditorial route; isolated from application authority" {
+        class: operational
+        width: 270
+        height: 105
+      }
+    }
   }
-  p1: {
-    label: "Operational P1 execution"
-    class: area
-    workers: "Distributed P1 Worker Plane\nOperational" { class: operational }
-  }
-  p2: {
-    label: "Ongoing P2 evolution"
-    class: area
-    smtp: "P2 SMTP Execution Plane\nONGOING" { class: ongoing }
+
+  lower: {
+    label: ""
+    grid-columns: 3
+    style.fill: transparent
+    style.stroke: transparent
+
+    authority: {
+      label: "3. Application Authority and Data\nApplication authority"
+      class: area
+      grid-rows: 2
+      api: "Application API" {
+        class: operational
+        width: 240
+        height: 110
+      }
+      db: "PostgreSQL Database\nAuthoritative data store" {
+        class: data
+        width: 260
+        height: 110
+      }
+    }
+
+    validation: {
+      label: "4. Validation Control and Execution"
+      class: area
+      grid-columns: 3
+      control: {
+        label: "Job orchestration"
+        class: area
+        job: "Job Control Plane" {
+          class: operational
+          width: 240
+          height: 110
+        }
+      }
+      p1: {
+        label: "Operational P1 execution"
+        class: area
+        workers: "Distributed P1 Worker Plane\nOperational" {
+          class: operational
+          width: 270
+          height: 115
+        }
+      }
+      p2: {
+        label: "Ongoing P2 evolution"
+        class: area
+        smtp: "P2 SMTP Execution Plane\nONGOING" {
+          class: ongoing
+          width: 270
+          height: 115
+        }
+      }
+    }
+
+    external: {
+      label: "5. External Services and Infrastructure\nExternal dependencies"
+      class: area
+      grid-columns: 2
+      grid-rows: 3
+      google: "Google Identity" {
+        class: external
+        width: 210
+        height: 75
+      }
+      microsoft: "Microsoft Identity" {
+        class: external
+        width: 210
+        height: 75
+      }
+      stripe: "Stripe" {
+        class: external
+        width: 210
+        height: 75
+      }
+      brevo: "Brevo" {
+        class: external
+        width: 210
+        height: 75
+      }
+      gha: "GitHub Actions\nExternal CI/CD and deployment automation" {
+        class: external
+        width: 270
+        height: 95
+      }
+      mail: "Internet Mail Infrastructure\nExternal" {
+        class: external
+        width: 250
+        height: 95
+      }
+    }
   }
 }
 
-external: {
-  label: "5. External Services and Infrastructure\nExternal dependencies"
-  class: area
-  google: "Google Identity" { class: external }
-  microsoft: "Microsoft Identity" { class: external }
-  stripe: "Stripe" { class: external }
-  brevo: "Brevo" { class: external }
-  gha: "GitHub Actions\nExternal CI/CD and deployment automation" { class: external }
-  mail: "Internet Mail Infrastructure\nExternal" { class: external }
-}
-
-users.customer -> experience.edge: "Accesses" { style.stroke: "#8bb8ff" }
-users.operator -> experience.edge: "Accesses approved interfaces" { style.stroke: "#8bb8ff" }
-experience.edge -> experience.web: "Routes application traffic" { style.stroke: "#8bb8ff" }
-experience.edge -> authority.api: "Routes API traffic" { style.stroke: "#8bb8ff" }
-experience.edge -> experience.blog: "Routes blog traffic" { style.stroke: "#8bb8ff" }
-experience.web -> authority.api: "Uses" { style.stroke: "#8bb8ff" }
-authority.api -> authority.db: "Reads and writes authoritative application data" { style.stroke: "#8bb8ff" }
-authority.api -> validation.control.job: "Submits and manages jobs" { style.stroke: "#8bb8ff" }
-validation.control.job -> authority.db: "Reads and writes lifecycle state" { style.stroke: "#8bb8ff" }
-validation.control.job -> validation.p1.workers: "Dispatches authorized work" { style.stroke: "#8bb8ff" }
-validation.p1.workers -> external.mail: "Queries for current P1 validation evidence" { style.stroke: "#8bb8ff" }
-validation.p1.workers -> validation.control.job: "Returns progress, evidence, and artifacts" { style.stroke: "#8bb8ff" }
-authority.api -> external.google: "Uses for federated authentication" { style.stroke: "#8bb8ff" }
-authority.api -> external.microsoft: "Uses for federated authentication" { style.stroke: "#8bb8ff" }
-authority.api -> external.stripe: "Coordinates checkout and signed payment events" { style.stroke: "#8bb8ff" }
-authority.api -> external.brevo: "Requests transactional and operational email" { style.stroke: "#8bb8ff" }
-external.gha -> experience.edge: "Builds and deploys reviewed releases" { style.stroke: "#8bb8ff" }
-validation.control.job -> validation.p2.smtp: "Will dispatch eligible recipients" {
+composition.upper.users.customer -> composition.upper.experience.edge: "Accesses" { style.stroke: "#8bb8ff" }
+composition.upper.users.operator -> composition.upper.experience.edge: "Accesses approved interfaces" { style.stroke: "#8bb8ff" }
+composition.upper.experience.edge -> composition.upper.experience.web: "Routes application traffic" { style.stroke: "#8bb8ff" }
+composition.upper.experience.edge -> composition.lower.authority.api: "Routes API traffic" { style.stroke: "#8bb8ff" }
+composition.upper.experience.edge -> composition.upper.experience.blog: "Routes blog traffic" { style.stroke: "#8bb8ff" }
+composition.upper.experience.web -> composition.lower.authority.api: "Uses" { style.stroke: "#8bb8ff" }
+composition.lower.authority.api -> composition.lower.authority.db: "Reads and writes\nauthoritative application data" { style.stroke: "#8bb8ff" }
+composition.lower.authority.api -> composition.lower.validation.control.job: "Submits and manages jobs" { style.stroke: "#8bb8ff" }
+composition.lower.validation.control.job -> composition.lower.authority.db: "Reads and writes lifecycle state" { style.stroke: "#8bb8ff" }
+composition.lower.validation.control.job -> composition.lower.validation.p1.workers: "Dispatches authorized work" { style.stroke: "#8bb8ff" }
+composition.lower.validation.p1.workers -> composition.lower.external.mail: "Queries for current P1\nvalidation evidence" { style.stroke: "#8bb8ff" }
+composition.lower.validation.p1.workers -> composition.lower.validation.control.job: "Returns progress, evidence,\nand artifacts" { style.stroke: "#8bb8ff" }
+composition.lower.authority.api -> composition.lower.external.google: "Uses for federated authentication" { style.stroke: "#8bb8ff" }
+composition.lower.authority.api -> composition.lower.external.microsoft: "Uses for federated authentication" { style.stroke: "#8bb8ff" }
+composition.lower.authority.api -> composition.lower.external.stripe: "Coordinates checkout and\nsigned payment events" { style.stroke: "#8bb8ff" }
+composition.lower.authority.api -> composition.lower.external.brevo: "Requests transactional and\noperational email" { style.stroke: "#8bb8ff" }
+composition.lower.external.gha -> composition.upper.experience.edge: "Builds and deploys\nreviewed releases" { style.stroke: "#8bb8ff" }
+composition.lower.validation.control.job -> composition.lower.validation.p2.smtp: "Will dispatch eligible recipients" {
   style.stroke: "#f59e0b"
   style.stroke-dash: 6
 }
-validation.p2.smtp -> external.mail: "Will perform conservative recipient handshakes" {
+composition.lower.validation.p2.smtp -> composition.lower.external.mail: "Will perform conservative\nrecipient handshakes" {
   style.stroke: "#f59e0b"
   style.stroke-dash: 6
 }
-validation.p2.smtp -> validation.control.job: "Will return typed SMTP evidence" {
+composition.lower.validation.p2.smtp -> composition.lower.validation.control.job: "Will return typed SMTP evidence" {
   style.stroke: "#f59e0b"
   style.stroke-dash: 6
 }
