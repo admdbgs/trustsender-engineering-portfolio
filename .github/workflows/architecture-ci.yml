@@ -9,6 +9,7 @@ on:
       - .github/workflows/architecture-ci.yml
       - README.md
       - diagrams/**
+      - visuals/**
   push:
     branches:
       - main
@@ -19,6 +20,7 @@ on:
       - .github/workflows/architecture-ci.yml
       - README.md
       - diagrams/**
+      - visuals/**
   workflow_dispatch:
 
 permissions:
@@ -163,6 +165,9 @@ jobs:
               raise SystemExit("Generated and committed Container View SVG differ after timestamp normalization")
           print("Normalized Container View SVG SHA-256", hashlib.sha256(normalized_committed).hexdigest())
           PY
+
+      - name: Render D2 engineering overview preview
+        run: bash scripts/render-d2-overview.sh
 
       - name: Upload dark-mode SVG previews
         uses: actions/upload-artifact@v4
