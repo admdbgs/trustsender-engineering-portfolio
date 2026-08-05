@@ -33,8 +33,22 @@ if [[ -n "${status_outside_build}" ]]; then
     exit 1
 fi
 
-rm -rf "${OUTPUT_DIRECTORY}"
-mkdir -p "${OUTPUT_DIRECTORY}"
+if [[ -d "${OUTPUT_DIRECTORY}" ]]; then
+    if [[ -L "${OUTPUT_DIRECTORY}" ]] || find "${OUTPUT_DIRECTORY}" -type l -print -quit | grep -q .; then
+        printf 'Error: symbolic links are not allowed in D2 preview output directory.\n' >&2
+        exit 1
+    fi
+else
+    mkdir -p "${OUTPUT_DIRECTORY}"
+fi
+
+preexisting_manifest="$(mktemp)"
+trap 'rm -f "${preexisting_manifest}"' EXIT
+find "${OUTPUT_DIRECTORY}" -type f ! -name 'trustsender-engineering-overview.svg' -print0     | sort -z     | while IFS= read -r -d '' preexisting_file; do
+        sha256sum "${preexisting_file}"
+    done > "${preexisting_manifest}"
+
+rm -f "${OUTPUT_PATH}"
 
 d2() {
     go run "${D2_MODULE}" "$@"
@@ -80,9 +94,25 @@ if re.search(r'\b(?:\d{1,3}\.){3}\d{1,3}\b', text):
     raise SystemExit('forbidden IP-address-like content')
 PY
 
-mapfile -d '' svg_files < <(find "${OUTPUT_DIRECTORY}" -type f -name '*.svg' -print0)
-if [[ "${#svg_files[@]}" -ne 1 ]]; then
-    printf 'Error: expected exactly one D2 SVG output, found %s.\n' "${#svg_files[@]}" >&2
+while read -r expected_hash expected_file; do
+    if [[ ! -f "${expected_file}" ]] || [[ -L "${expected_file}" ]]; then
+        printf 'Error: preexisting output file is missing or no longer regular: %s\n' "${expected_file}" >&2
+        exit 1
+    fi
+    observed_hash="$(sha256sum "${expected_file}" | awk '{print $1}')"
+    if [[ "${observed_hash}" != "${expected_hash}" ]]; then
+        printf 'Error: preexisting output file changed: %s\n' "${expected_file}" >&2
+        exit 1
+    fi
+done < "${preexisting_manifest}"
+
+mapfile -d '' d2_overview_files < <(
+    find "${OUTPUT_DIRECTORY}" -type f -name 'trustsender-engineering-overview*.svg' -print0 | sort -z
+)
+if [[ "${#d2_overview_files[@]}" -ne 1 ]] || [[ "${d2_overview_files[0]}" != "${OUTPUT_PATH}" ]]; then
+    printf 'Error: expected exactly one D2 overview SVG output at %s.\n' "${OUTPUT_PATH}" >&2
+    printf 'Observed D2 overview SVG outputs:\n' >&2
+    printf '  %s\n' "${d2_overview_files[@]}" >&2
     exit 1
 fi
 

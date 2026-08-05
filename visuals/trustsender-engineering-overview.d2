@@ -125,6 +125,15 @@ authority.api -> external.microsoft: "Uses for federated authentication" { style
 authority.api -> external.stripe: "Coordinates checkout and signed payment events" { style.stroke: "#8bb8ff" }
 authority.api -> external.brevo: "Requests transactional and operational email" { style.stroke: "#8bb8ff" }
 external.gha -> experience.edge: "Builds and deploys reviewed releases" { style.stroke: "#8bb8ff" }
-validation.control.job -> validation.p2.smtp: "Will dispatch eligible recipients" { style.stroke: "#f59e0b" style.stroke-dash: 6 }
-validation.p2.smtp -> external.mail: "Will perform conservative recipient handshakes" { style.stroke: "#f59e0b" style.stroke-dash: 6 }
-validation.p2.smtp -> validation.control.job: "Will return typed SMTP evidence" { style.stroke: "#f59e0b" style.stroke-dash: 6 }
+validation.control.job -> validation.p2.smtp: "Will dispatch eligible recipients" {
+  style.stroke: "#f59e0b"
+  style.stroke-dash: 6
+}
+validation.p2.smtp -> external.mail: "Will perform conservative recipient handshakes" {
+  style.stroke: "#f59e0b"
+  style.stroke-dash: 6
+}
+validation.p2.smtp -> validation.control.job: "Will return typed SMTP evidence" {
+  style.stroke: "#f59e0b"
+  style.stroke-dash: 6
+}

@@ -142,6 +142,63 @@ class D2EngineeringOverviewTests(unittest.TestCase):
             with self.subTest(phrase=phrase):
                 self.assertIn(phrase, self.visuals_readme)
 
+
+    def test_invalid_inline_amber_dashed_blocks_are_absent(self):
+        self.assertNotIn('{ style.stroke: "#f59e0b" style.stroke-dash: 6 }', self.d2)
+
+    def test_all_corrected_multiline_p2_relationship_blocks_are_present(self):
+        for block in (
+            'validation.control.job -> validation.p2.smtp: "Will dispatch eligible recipients" {\n  style.stroke: "#f59e0b"\n  style.stroke-dash: 6\n}',
+            'validation.p2.smtp -> external.mail: "Will perform conservative recipient handshakes" {\n  style.stroke: "#f59e0b"\n  style.stroke-dash: 6\n}',
+            'validation.p2.smtp -> validation.control.job: "Will return typed SMTP evidence" {\n  style.stroke: "#f59e0b"\n  style.stroke-dash: 6\n}',
+        ):
+            with self.subTest(block=block.splitlines()[0]):
+                self.assertIn(block, self.d2)
+
+    def test_renderer_does_not_delete_shared_output_directory(self):
+        self.assertNotIn('rm -rf "${OUTPUT_DIRECTORY}"', self.renderer)
+
+    def test_renderer_removes_at_most_exact_d2_output_path(self):
+        rm_lines = [line.strip() for line in self.renderer.splitlines() if line.strip().startswith('rm ')]
+        self.assertIn('rm -f "${OUTPUT_PATH}"', rm_lines)
+        self.assertEqual(['rm -f "${OUTPUT_PATH}"'], rm_lines)
+
+    def test_renderer_preserves_preexisting_output_file_hashes(self):
+        for token in ('preexisting_manifest', 'sha256sum "${preexisting_file}"', 'preexisting output file changed'):
+            with self.subTest(token=token):
+                self.assertIn(token, self.renderer)
+
+    def test_renderer_does_not_require_entire_shared_svg_directory_to_contain_one_svg(self):
+        self.assertNotIn('find "${OUTPUT_DIRECTORY}" -type f -name \'*.svg\'', self.renderer)
+        self.assertNotIn('expected exactly one D2 SVG output', self.renderer)
+
+    def test_renderer_requires_exactly_one_d2_overview_output(self):
+        self.assertIn("-name 'trustsender-engineering-overview*.svg'", self.renderer)
+        self.assertIn('expected exactly one D2 overview SVG output', self.renderer)
+
+    def test_expected_d2_output_filename_remains(self):
+        self.assertIn('trustsender-engineering-overview.svg', self.renderer)
+
+    def test_artifact_upload_path_allows_structurizr_and_d2_previews(self):
+        self.assertIn('path: build/architecture-svg/*.svg', self.workflow)
+
+    def test_structurizr_and_d2_previews_can_coexist_in_shared_artifact_directory(self):
+        expected = (
+            'trustsender-container-view-key.svg',
+            'trustsender-container-view.svg',
+            'trustsender-engineering-overview.svg',
+            'trustsender-system-context-key.svg',
+            'trustsender-system-context.svg',
+        )
+        self.assertIn('build/architecture-svg/*.svg', self.workflow)
+        self.assertIn('find "${OUTPUT_DIRECTORY}" -type f ! -name \'trustsender-engineering-overview.svg\'', self.renderer)
+        for filename in expected:
+            with self.subTest(filename=filename):
+                if filename == 'trustsender-engineering-overview.svg':
+                    self.assertIn(filename, self.renderer)
+                else:
+                    self.assertNotIn(f'rm -f "${{OUTPUT_DIRECTORY}}/{filename}"', self.renderer)
+
     def test_root_readme_does_not_yet_embed_d2_svg(self):
         self.assertNotIn("trustsender-engineering-overview.svg", self.root_readme)
         self.assertNotRegex(self.root_readme, re.compile(r"!\[[^\]]*D2", re.IGNORECASE))
