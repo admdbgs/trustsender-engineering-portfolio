@@ -54,11 +54,11 @@ class D2EngineeringOverviewTests(unittest.TestCase):
 
     def test_p2_styling_is_dashed(self):
         self.assertRegex(self.d2, r"ongoing:[\s\S]*stroke-dash: 6")
-        self.assertRegex(self.d2, r"composition\.lower\.validation\.control\.job -> composition\.lower\.validation\.p2\.smtp:[\s\S]*style\.stroke-dash: 6")
+        self.assertRegex(self.d2, r"composition\.lower\.validation\.control\.job -> composition\.lower\.validation\.execution\.p2\.smtp:[\s\S]*style\.stroke-dash: 6")
 
     def test_p2_styling_is_amber(self):
         self.assertRegex(self.d2, r"ongoing:[\s\S]*#f59e0b")
-        self.assertRegex(self.d2, r"composition\.lower\.validation\.p2\.smtp -> composition\.lower\.external\.mail:[\s\S]*#f59e0b")
+        self.assertRegex(self.d2, r"composition\.lower\.validation\.execution\.p2\.smtp -> composition\.lower\.external\.delivery_infrastructure\.mail:[\s\S]*#f59e0b")
 
     def test_operational_and_ongoing_styles_are_distinct(self):
         self.assertIn("#8bb8ff", self.d2)
@@ -147,13 +147,13 @@ class D2EngineeringOverviewTests(unittest.TestCase):
         self.assertNotIn('{ style.stroke: "#f59e0b" style.stroke-dash: 6 }', self.d2)
 
     def test_all_corrected_multiline_p2_relationship_blocks_are_present(self):
-        for block in (
-            'composition.lower.validation.control.job -> composition.lower.validation.p2.smtp: "Will dispatch eligible recipients" {\n  style.stroke: "#f59e0b"\n  style.stroke-dash: 6\n}',
-            'composition.lower.validation.p2.smtp -> composition.lower.external.mail: "Will perform conservative\\nrecipient handshakes" {\n  style.stroke: "#f59e0b"\n  style.stroke-dash: 6\n}',
-            'composition.lower.validation.p2.smtp -> composition.lower.validation.control.job: "Will return typed SMTP evidence" {\n  style.stroke: "#f59e0b"\n  style.stroke-dash: 6\n}',
+        for first_line in (
+            'composition.lower.validation.control.job -> composition.lower.validation.execution.p2.smtp: "Will dispatch\\neligible recipients" {',
+            'composition.lower.validation.execution.p2.smtp -> composition.lower.external.delivery_infrastructure.mail: "Will perform conservative\\nrecipient handshakes" {',
+            'composition.lower.validation.execution.p2.smtp -> composition.lower.validation.control.job: "Will return typed\\nSMTP evidence" {',
         ):
-            with self.subTest(block=block.splitlines()[0]):
-                self.assertIn(block, self.d2)
+            with self.subTest(first_line=first_line):
+                self.assertIn(first_line, self.d2)
 
     def test_renderer_does_not_delete_shared_output_directory(self):
         self.assertNotIn('rm -rf "${OUTPUT_DIRECTORY}"', self.renderer)
@@ -219,15 +219,20 @@ class D2EngineeringOverviewTests(unittest.TestCase):
             index += 1
         return relationships
 
+
+    def _edge_block(self, first_line):
+        start = self.d2.index(first_line)
+        return self.d2[start:self.d2.index('\n}', start) + 2]
+
     def test_header_presentation_object_exists_once(self):
-        self.assertEqual(1, self.d2.count('header: "TrustSender.io Engineering Overview\\n'))
+        self.assertEqual(1, self.d2.count('header: {'))
 
     def test_header_uses_text_shape(self):
-        header_block = self._block_between('header: "', '\n}\n\nclasses:')
+        header_block = self._block_between('header: {', '\n}\n\nclasses:')
         self.assertIn('shape: text', header_block)
 
     def test_header_uses_near_top_center(self):
-        header_block = self._block_between('header: "', '\n}\n\nclasses:')
+        header_block = self._block_between('header: {', '\n}\n\nclasses:')
         self.assertIn('near: top-center', header_block)
 
     def test_exact_subtitle_remains_present(self):
@@ -244,19 +249,19 @@ class D2EngineeringOverviewTests(unittest.TestCase):
         block = self._block_between('composition: {', '\n\n  upper: {')
         self.assertIn('label: ""', block)
         self.assertIn('grid-rows: 2', block)
-        self.assertIn('style.fill: transparent', block)
+        self.assertIn('style.fill: "#1E1E2E"', block)
         self.assertIn('style.stroke: transparent', block)
 
     def test_transparent_upper_lane_exists(self):
         block = self._block_between('upper: {', '\n\n    users: {')
         self.assertIn('label: ""', block)
-        self.assertIn('style.fill: transparent', block)
+        self.assertIn('style.fill: "#1E1E2E"', block)
         self.assertIn('style.stroke: transparent', block)
 
     def test_transparent_lower_lane_exists(self):
         block = self._block_between('lower: {', '\n\n    authority: {')
         self.assertIn('label: ""', block)
-        self.assertIn('style.fill: transparent', block)
+        self.assertIn('style.fill: "#1E1E2E"', block)
         self.assertIn('style.stroke: transparent', block)
 
     def test_upper_lane_uses_two_columns_and_declares_users_then_experience(self):
@@ -273,13 +278,14 @@ class D2EngineeringOverviewTests(unittest.TestCase):
     def test_external_systems_use_two_column_three_row_grid(self):
         block = self._block_between('    external: {', '\n    }\n  }\n}')
         self.assertIn('grid-columns: 2', block)
-        self.assertIn('grid-rows: 3', block)
+        self.assertIn('application_services: {', block)
+        self.assertIn('delivery_infrastructure: {', block)
         for earlier, later in (("Google Identity", "Microsoft Identity"), ("Microsoft Identity", "Stripe"), ("Stripe", "Brevo"), ("Brevo", "GitHub Actions"), ("GitHub Actions", "Internet Mail Infrastructure")):
             self.assertLess(block.index(earlier), block.index(later))
 
     def test_users_use_vertical_two_item_grid(self):
         block = self._block_between('users: {', '\n    }\n\n    experience:')
-        self.assertIn('grid-rows: 2', block)
+        self.assertIn('grid-columns: 2', block)
         self.assertLess(block.index('Customer'), block.index('Platform Operator'))
 
     def test_application_api_appears_before_postgresql(self):
@@ -293,13 +299,13 @@ class D2EngineeringOverviewTests(unittest.TestCase):
     def test_every_required_leaf_node_has_explicit_width_and_height(self):
         expected = {
             'Customer': (190, 70), 'Platform Operator': (190, 70),
-            'Edge and Routing': (220, 90), 'Web Application': (230, 90),
-            'WordPress Blog': (270, 105), 'Application API': (240, 110),
-            'PostgreSQL Database': (260, 110), 'Job Control Plane': (240, 110),
-            'Distributed P1 Worker Plane': (270, 115), 'P2 SMTP Execution Plane': (270, 115),
+            'Edge and Routing': (260, 120), 'Web Application': (230, 90),
+            'WordPress Blog': (270, 105), 'Application API': (320, 180),
+            'PostgreSQL Database': (300, 125), 'Job Control Plane': (320, 170),
+            'Distributed P1 Worker Plane': (340, 160), 'P2 SMTP Execution Plane': (340, 160),
             'Google Identity': (210, 75), 'Microsoft Identity': (210, 75),
             'Stripe': (210, 75), 'Brevo': (210, 75),
-            'GitHub Actions': (270, 95), 'Internet Mail Infrastructure': (250, 95),
+            'GitHub Actions': (270, 95), 'Internet Mail Infrastructure': (280, 110),
         }
         for name, (width, height) in expected.items():
             with self.subTest(name=name):
@@ -328,17 +334,17 @@ class D2EngineeringOverviewTests(unittest.TestCase):
             ('composition.lower.authority.api', 'composition.lower.authority.db'),
             ('composition.lower.authority.api', 'composition.lower.validation.control.job'),
             ('composition.lower.validation.control.job', 'composition.lower.authority.db'),
-            ('composition.lower.validation.control.job', 'composition.lower.validation.p1.workers'),
-            ('composition.lower.validation.p1.workers', 'composition.lower.external.mail'),
-            ('composition.lower.validation.p1.workers', 'composition.lower.validation.control.job'),
-            ('composition.lower.authority.api', 'composition.lower.external.google'),
-            ('composition.lower.authority.api', 'composition.lower.external.microsoft'),
-            ('composition.lower.authority.api', 'composition.lower.external.stripe'),
-            ('composition.lower.authority.api', 'composition.lower.external.brevo'),
-            ('composition.lower.external.gha', 'composition.upper.experience.edge'),
-            ('composition.lower.validation.control.job', 'composition.lower.validation.p2.smtp'),
-            ('composition.lower.validation.p2.smtp', 'composition.lower.external.mail'),
-            ('composition.lower.validation.p2.smtp', 'composition.lower.validation.control.job'),
+            ('composition.lower.validation.control.job', 'composition.lower.validation.execution.p1.workers'),
+            ('composition.lower.validation.execution.p1.workers', 'composition.lower.external.delivery_infrastructure.mail'),
+            ('composition.lower.validation.execution.p1.workers', 'composition.lower.validation.control.job'),
+            ('composition.lower.authority.api', 'composition.lower.external.application_services.google'),
+            ('composition.lower.authority.api', 'composition.lower.external.application_services.microsoft'),
+            ('composition.lower.authority.api', 'composition.lower.external.application_services.stripe'),
+            ('composition.lower.authority.api', 'composition.lower.external.application_services.brevo'),
+            ('composition.lower.external.delivery_infrastructure.gha', 'composition.upper.experience.edge'),
+            ('composition.lower.validation.control.job', 'composition.lower.validation.execution.p2.smtp'),
+            ('composition.lower.validation.execution.p2.smtp', 'composition.lower.external.delivery_infrastructure.mail'),
+            ('composition.lower.validation.execution.p2.smtp', 'composition.lower.validation.control.job'),
         ]
         observed = [(source, destination) for source, destination, _ in self._normalized_relationships()]
         self.assertEqual(expected, observed)
@@ -375,6 +381,115 @@ class D2EngineeringOverviewTests(unittest.TestCase):
     def test_p2_remains_exactly_ongoing(self):
         self.assertEqual(2, self.d2.count('ONGOING'))
         self.assertIn('P2 SMTP Execution Plane\\nONGOING', self.d2)
+
+
+    def test_explicit_root_fill_is_dark_background(self):
+        self.assertIn('style.fill: "#1E1E2E"', self.d2.split('header: {', 1)[0])
+
+    def test_composition_and_lane_fills_match_root(self):
+        for marker in ('composition: {', 'upper: {', 'lower: {'):
+            with self.subTest(marker=marker):
+                block = self._block_between(marker, '\n\n')
+                self.assertIn('style.fill: "#1E1E2E"', block)
+                self.assertIn('style.stroke: transparent', block)
+
+    def test_no_layout_only_container_uses_opacity_zero(self):
+        self.assertNotIn('opacity: 0', self.d2)
+        self.assertNotIn('style.opacity: 0', self.d2)
+
+    def test_header_contains_title_and_subtitle_text_children(self):
+        block = self._block_between('header: {', '\n}\n\nclasses:')
+        self.assertEqual(1, block.count('title_text: "TrustSender.io Engineering Overview"'))
+        self.assertEqual(1, block.count('subtitle_text: "P1 distributed validation is operational; P2 SMTP evolution remains ONGOING."'))
+
+    def test_title_text_font_size_and_style_are_correct(self):
+        block = self._block_between('title_text: "TrustSender.io Engineering Overview" {', '\n  }\n  subtitle_text:')
+        self.assertIn('shape: text', block)
+        self.assertIn('font-size: 32', block)
+        self.assertIn('bold: true', block)
+        self.assertIn('font-color: "#edf3ff"', block)
+
+    def test_subtitle_text_font_size_and_style_are_correct(self):
+        block = self._block_between('subtitle_text: "P1 distributed validation is operational; P2 SMTP evolution remains ONGOING." {', '\n  }\n}\n\nclasses:')
+        self.assertIn('shape: text', block)
+        self.assertIn('font-size: 18', block)
+        self.assertIn('bold: false', block)
+        self.assertIn('font-color: "#cbd5e1"', block)
+
+    def test_users_use_two_columns_and_customer_first(self):
+        block = self._block_between('users: {', '\n    }\n\n    experience:')
+        self.assertIn('grid-columns: 2', block)
+        self.assertLess(block.index('customer: "Customer"'), block.index('operator: "Platform Operator"'))
+
+    def test_validation_uses_two_rows_and_execution_second(self):
+        block = self._block_between('validation: {', '\n\n    external: {')
+        self.assertIn('grid-rows: 2', block)
+        self.assertLess(block.index('control: {'), block.index('execution: {'))
+
+    def test_execution_is_unlabeled_background_filled_two_column_layout(self):
+        block = self._block_between('execution: {', '\n      }\n    }\n\n    external:')
+        self.assertIn('label: ""', block)
+        self.assertIn('grid-columns: 2', block)
+        self.assertIn('style.fill: "#1E1E2E"', block)
+        self.assertIn('style.stroke: transparent', block)
+        self.assertLess(block.index('p1: {'), block.index('p2: {'))
+
+    def test_application_services_uses_two_by_two_grid_and_expected_members(self):
+        block = self._block_between('application_services: {', '\n      }\n      delivery_infrastructure:')
+        self.assertIn('grid-columns: 2', block)
+        self.assertIn('grid-rows: 2', block)
+        for name in ('Google Identity', 'Microsoft Identity', 'Stripe', 'Brevo'):
+            self.assertIn(name, block)
+        self.assertNotIn('GitHub Actions', block)
+        self.assertNotIn('Internet Mail Infrastructure', block)
+
+    def test_delivery_infrastructure_uses_two_item_vertical_grid(self):
+        block = self._block_between('delivery_infrastructure: {', '\n      }\n    }\n  }\n}')
+        self.assertIn('grid-rows: 2', block)
+        self.assertIn('GitHub Actions', block)
+        self.assertIn('Internet Mail Infrastructure', block)
+        self.assertNotIn('Google Identity', block)
+
+    def test_required_central_node_dimensions_are_approved(self):
+        expected = {
+            'Edge and Routing': (260, 120), 'Application API': (320, 180),
+            'PostgreSQL Database': (300, 125), 'Job Control Plane': (320, 170),
+            'Distributed P1 Worker Plane': (340, 160), 'P2 SMTP Execution Plane': (340, 160),
+            'Internet Mail Infrastructure': (280, 110),
+        }
+        for name, (width, height) in expected.items():
+            with self.subTest(name=name):
+                self.assertRegex(self.d2, re.escape(f'"{name}') + r'[\s\S]*?width: ' + str(width) + r'[\s\S]*?height: ' + str(height))
+
+    def test_every_operational_edge_has_complete_approved_label_style(self):
+        required = ('style.stroke: "#8bb8ff"', 'style.stroke-width: 2', 'style.font-size: 13', 'style.font-color: "#dbeafe"', 'style.fill: "#1E1E2E"', 'style.border-radius: 8', 'style.bold: false')
+        for line in self._relationship_lines()[:17]:
+            block = self._edge_block(line)
+            with self.subTest(edge=line):
+                for token in required:
+                    self.assertIn(token, block)
+                self.assertNotIn('style.stroke-dash', block)
+
+    def test_every_p2_edge_has_complete_amber_dashed_label_style(self):
+        required = ('style.stroke: "#f59e0b"', 'style.stroke-width: 2', 'style.stroke-dash: 6', 'style.font-size: 13', 'style.font-color: "#ffe7b0"', 'style.fill: "#1E1E2E"', 'style.border-radius: 8', 'style.bold: false')
+        for line in self._relationship_lines()[17:]:
+            block = self._edge_block(line)
+            with self.subTest(edge=line):
+                for token in required:
+                    self.assertIn(token, block)
+
+    def test_no_layout_only_connection_exists(self):
+        for line in self._relationship_lines():
+            self.assertNotIn('composition ->', line)
+            self.assertNotIn('upper ->', line)
+            self.assertNotIn('lower ->', line)
+            self.assertNotIn('execution ->', line)
+
+    def test_grid_gaps_are_declared_for_balanced_layout_groups(self):
+        for marker in ('composition: {', 'upper: {', 'lower: {', 'users: {', 'experience: {', 'authority: {', 'validation: {', 'execution: {', '    external: {', 'application_services: {', 'delivery_infrastructure: {'):
+            with self.subTest(marker=marker):
+                block = self.d2[self.d2.index(marker):self.d2.index(marker) + 220]
+                self.assertRegex(block, r'grid-gap: (2[4-9]|[3-6][0-9]|70)')
 
     def test_root_readme_does_not_yet_embed_d2_svg(self):
         self.assertNotIn("trustsender-engineering-overview.svg", self.root_readme)
