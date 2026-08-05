@@ -5,6 +5,8 @@ vars: {
   }
 }
 
+direction: down
+
 style.fill: "#1E1E2E"
 
 header: {
@@ -87,120 +89,87 @@ classes: {
 
 composition: {
   label: ""
-  grid-rows: 3
-  grid-gap: 46
   style.fill: "#1E1E2E"
   style.stroke: transparent
 
-  upper: {
-    label: ""
-    grid-columns: 2
-    grid-gap: 42
-    style.fill: "#1E1E2E"
-    style.stroke: transparent
-
-    users: {
-      label: "1. Users"
-      class: area
-      grid-columns: 2
-      grid-gap: 28
-      customer: "Customer" {
-        class: operational
-        width: 190
-        height: 70
-      }
-      operator: "Platform Operator" {
-        class: operational
-        width: 190
-        height: 70
-      }
+  users: {
+    label: "1. Users"
+    class: area
+    customer: "Customer" {
+      class: operational
+      width: 190
+      height: 70
     }
-
-    experience: {
-      label: "2. Experience and Routing\nPublic access and experience"
-      class: area
-      grid-rows: 2
-      grid-gap: 30
-      edge: "Edge and Routing" {
-        class: operational
-        width: 260
-        height: 120
-      }
-      web: "Web Application" {
-        class: operational
-        width: 230
-        height: 90
-      }
-      blog: "WordPress Blog\nEditorial route; isolated from application authority" {
-        class: operational
-        width: 270
-        height: 105
-      }
+    operator: "Platform Operator" {
+      class: operational
+      width: 190
+      height: 70
     }
   }
 
-  core: {
-    label: ""
-    grid-columns: 2
-    grid-gap: 52
-    style.fill: "#1E1E2E"
-    style.stroke: transparent
+  experience: {
+    label: "2. Experience and Routing\nPublic access and experience"
+    class: area
+    edge: "Edge and Routing" {
+      class: operational
+      width: 260
+      height: 120
+    }
+    web: "Web Application" {
+      class: operational
+      width: 230
+      height: 90
+    }
+    blog: "WordPress Blog\nEditorial route; isolated from application authority" {
+      class: operational
+      width: 270
+      height: 105
+    }
+  }
 
-    authority: {
-      label: "3. Application Authority and Data\nApplication authority"
+  authority: {
+    label: "3. Application Authority and Data\nApplication authority"
+    class: area
+    api: "Application API" {
+      class: operational
+      width: 320
+      height: 180
+    }
+    db: "PostgreSQL Database\nAuthoritative data store" {
+      class: data
+      width: 300
+      height: 125
+    }
+  }
+
+  validation: {
+    label: "4. Validation Control and Execution"
+    class: area
+    control: {
+      label: "Job orchestration"
       class: area
-      grid-rows: 2
-      grid-gap: 40
-      api: "Application API" {
+      job: "Job Control Plane" {
         class: operational
         width: 320
-        height: 180
-      }
-      db: "PostgreSQL Database\nAuthoritative data store" {
-        class: data
-        width: 300
-        height: 125
+        height: 170
       }
     }
-
-    validation: {
-      label: "4. Validation Control and Execution"
+    p1: {
+      label: "Operational P1 execution"
       class: area
-      grid-rows: 2
-      grid-gap: 46
-      control: {
-        label: "Job orchestration"
-        class: area
-        job: "Job Control Plane" {
-          class: operational
-          width: 320
-          height: 170
-        }
+      workers: "Distributed P1 Worker Plane\nOperational" {
+        class: operational
+        width: 340
+        height: 160
       }
-      execution: {
-        label: ""
-        grid-columns: 2
-        grid-gap: 48
-        style.fill: "#1E1E2E"
-        style.stroke: transparent
-        p1: {
-          label: "Operational P1 execution"
-          class: area
-          workers: "Distributed P1 Worker Plane\nOperational" {
-            class: operational
-            width: 340
-            height: 160
-          }
-        }
-        p2: {
-          label: "Ongoing P2 evolution"
-          class: area
-          smtp: "P2 SMTP Execution Plane\nONGOING" {
-            class: ongoing
-            width: 340
-            height: 160
-          }
-        }
+    }
+    p2: {
+      label: "Ongoing P2 evolution"
+      class: area
+      smtp: "P2 SMTP Execution Plane\nONGOING" {
+        class: ongoing
+        width: 340
+        height: 160
       }
     }
   }
@@ -208,57 +177,40 @@ composition: {
   external: {
     label: "5. External Services and Infrastructure\nExternal dependencies"
     class: area
-    grid-columns: 2
-    grid-gap: 46
-    application_services: {
-      label: ""
-      grid-columns: 2
-      grid-rows: 2
-      grid-gap: 30
-      style.fill: "#1E1E2E"
-      style.stroke: transparent
-      google: "Google Identity" {
-        class: external
-        width: 210
-        height: 75
-      }
-      microsoft: "Microsoft Identity" {
-        class: external
-        width: 210
-        height: 75
-      }
-      stripe: "Stripe" {
-        class: external
-        width: 210
-        height: 75
-      }
-      brevo: "Brevo" {
-        class: external
-        width: 210
-        height: 75
-      }
+    google: "Google Identity" {
+      class: external
+      width: 210
+      height: 75
     }
-    delivery_infrastructure: {
-      label: ""
-      grid-rows: 2
-      grid-gap: 34
-      style.fill: "#1E1E2E"
-      style.stroke: transparent
-      gha: "GitHub Actions\nExternal CI/CD and deployment automation" {
-        class: external
-        width: 270
-        height: 95
-      }
-      mail: "Internet Mail Infrastructure\nExternal" {
-        class: external
-        width: 280
-        height: 110
-      }
+    microsoft: "Microsoft Identity" {
+      class: external
+      width: 210
+      height: 75
+    }
+    stripe: "Stripe" {
+      class: external
+      width: 210
+      height: 75
+    }
+    brevo: "Brevo" {
+      class: external
+      width: 210
+      height: 75
+    }
+    gha: "GitHub Actions\nExternal CI/CD and deployment automation" {
+      class: external
+      width: 270
+      height: 95
+    }
+    mail: "Internet Mail Infrastructure\nExternal" {
+      class: external
+      width: 280
+      height: 110
     }
   }
 }
 
-composition.upper.users.customer -> composition.upper.experience.edge: "Accesses" {
+composition.users.customer -> composition.experience.edge: "Accesses" {
   style.stroke: "#8bb8ff"
   style.stroke-width: 2
   style.font-size: 13
@@ -267,7 +219,7 @@ composition.upper.users.customer -> composition.upper.experience.edge: "Accesses
   style.border-radius: 8
   style.bold: false
 }
-composition.upper.users.operator -> composition.upper.experience.edge: "Accesses approved\ninterfaces" {
+composition.users.operator -> composition.experience.edge: "Accesses approved\ninterfaces" {
   style.stroke: "#8bb8ff"
   style.stroke-width: 2
   style.font-size: 13
@@ -276,7 +228,7 @@ composition.upper.users.operator -> composition.upper.experience.edge: "Accesses
   style.border-radius: 8
   style.bold: false
 }
-composition.upper.experience.edge -> composition.upper.experience.web: "Routes application\ntraffic" {
+composition.experience.edge -> composition.experience.web: "Routes application\ntraffic" {
   style.stroke: "#8bb8ff"
   style.stroke-width: 2
   style.font-size: 13
@@ -285,7 +237,7 @@ composition.upper.experience.edge -> composition.upper.experience.web: "Routes a
   style.border-radius: 8
   style.bold: false
 }
-composition.upper.experience.edge -> composition.core.authority.api: "Routes API traffic" {
+composition.experience.edge -> composition.authority.api: "Routes API traffic" {
   style.stroke: "#8bb8ff"
   style.stroke-width: 2
   style.font-size: 13
@@ -294,7 +246,7 @@ composition.upper.experience.edge -> composition.core.authority.api: "Routes API
   style.border-radius: 8
   style.bold: false
 }
-composition.upper.experience.edge -> composition.upper.experience.blog: "Routes blog traffic" {
+composition.experience.edge -> composition.experience.blog: "Routes blog traffic" {
   style.stroke: "#8bb8ff"
   style.stroke-width: 2
   style.font-size: 13
@@ -303,7 +255,7 @@ composition.upper.experience.edge -> composition.upper.experience.blog: "Routes 
   style.border-radius: 8
   style.bold: false
 }
-composition.upper.experience.web -> composition.core.authority.api: "Uses" {
+composition.experience.web -> composition.authority.api: "Uses" {
   style.stroke: "#8bb8ff"
   style.stroke-width: 2
   style.font-size: 13
@@ -312,7 +264,7 @@ composition.upper.experience.web -> composition.core.authority.api: "Uses" {
   style.border-radius: 8
   style.bold: false
 }
-composition.core.authority.api -> composition.core.authority.db: "Reads and writes\nauthoritative application data" {
+composition.authority.api -> composition.authority.db: "Reads and writes\nauthoritative application data" {
   style.stroke: "#8bb8ff"
   style.stroke-width: 2
   style.font-size: 13
@@ -321,7 +273,7 @@ composition.core.authority.api -> composition.core.authority.db: "Reads and writ
   style.border-radius: 8
   style.bold: false
 }
-composition.core.authority.api -> composition.core.validation.control.job: "Submits and\nmanages jobs" {
+composition.authority.api -> composition.validation.control.job: "Submits and\nmanages jobs" {
   style.stroke: "#8bb8ff"
   style.stroke-width: 2
   style.font-size: 13
@@ -330,7 +282,7 @@ composition.core.authority.api -> composition.core.validation.control.job: "Subm
   style.border-radius: 8
   style.bold: false
 }
-composition.core.validation.control.job -> composition.core.authority.db: "Reads and writes\nlifecycle state" {
+composition.validation.control.job -> composition.authority.db: "Reads and writes\nlifecycle state" {
   style.stroke: "#8bb8ff"
   style.stroke-width: 2
   style.font-size: 13
@@ -339,7 +291,7 @@ composition.core.validation.control.job -> composition.core.authority.db: "Reads
   style.border-radius: 8
   style.bold: false
 }
-composition.core.validation.control.job -> composition.core.validation.execution.p1.workers: "Dispatches\nauthorized work" {
+composition.validation.control.job -> composition.validation.p1.workers: "Dispatches\nauthorized work" {
   style.stroke: "#8bb8ff"
   style.stroke-width: 2
   style.font-size: 13
@@ -348,7 +300,7 @@ composition.core.validation.control.job -> composition.core.validation.execution
   style.border-radius: 8
   style.bold: false
 }
-composition.core.validation.execution.p1.workers -> composition.external.delivery_infrastructure.mail: "Queries for current P1\nvalidation evidence" {
+composition.validation.p1.workers -> composition.external.mail: "Queries for current P1\nvalidation evidence" {
   style.stroke: "#8bb8ff"
   style.stroke-width: 2
   style.font-size: 13
@@ -357,7 +309,7 @@ composition.core.validation.execution.p1.workers -> composition.external.deliver
   style.border-radius: 8
   style.bold: false
 }
-composition.core.validation.execution.p1.workers -> composition.core.validation.control.job: "Returns progress, evidence,\nand artifacts" {
+composition.validation.p1.workers -> composition.validation.control.job: "Returns progress, evidence,\nand artifacts" {
   style.stroke: "#8bb8ff"
   style.stroke-width: 2
   style.font-size: 13
@@ -366,7 +318,7 @@ composition.core.validation.execution.p1.workers -> composition.core.validation.
   style.border-radius: 8
   style.bold: false
 }
-composition.core.authority.api -> composition.external.application_services.google: "Uses for federated\nauthentication" {
+composition.authority.api -> composition.external.google: "Uses for federated\nauthentication" {
   style.stroke: "#8bb8ff"
   style.stroke-width: 2
   style.font-size: 13
@@ -375,7 +327,7 @@ composition.core.authority.api -> composition.external.application_services.goog
   style.border-radius: 8
   style.bold: false
 }
-composition.core.authority.api -> composition.external.application_services.microsoft: "Uses for federated\nauthentication" {
+composition.authority.api -> composition.external.microsoft: "Uses for federated\nauthentication" {
   style.stroke: "#8bb8ff"
   style.stroke-width: 2
   style.font-size: 13
@@ -384,7 +336,7 @@ composition.core.authority.api -> composition.external.application_services.micr
   style.border-radius: 8
   style.bold: false
 }
-composition.core.authority.api -> composition.external.application_services.stripe: "Coordinates checkout and\nsigned payment events" {
+composition.authority.api -> composition.external.stripe: "Coordinates checkout and\nsigned payment events" {
   style.stroke: "#8bb8ff"
   style.stroke-width: 2
   style.font-size: 13
@@ -393,7 +345,7 @@ composition.core.authority.api -> composition.external.application_services.stri
   style.border-radius: 8
   style.bold: false
 }
-composition.core.authority.api -> composition.external.application_services.brevo: "Requests transactional and\noperational email" {
+composition.authority.api -> composition.external.brevo: "Requests transactional and\noperational email" {
   style.stroke: "#8bb8ff"
   style.stroke-width: 2
   style.font-size: 13
@@ -402,7 +354,7 @@ composition.core.authority.api -> composition.external.application_services.brev
   style.border-radius: 8
   style.bold: false
 }
-composition.external.delivery_infrastructure.gha -> composition.upper.experience.edge: "Builds and deploys\nreviewed releases" {
+composition.external.gha -> composition.experience.edge: "Builds and deploys\nreviewed releases" {
   style.stroke: "#8bb8ff"
   style.stroke-width: 2
   style.font-size: 13
@@ -411,7 +363,7 @@ composition.external.delivery_infrastructure.gha -> composition.upper.experience
   style.border-radius: 8
   style.bold: false
 }
-composition.core.validation.control.job -> composition.core.validation.execution.p2.smtp: "Will dispatch\neligible recipients" {
+composition.validation.control.job -> composition.validation.p2.smtp: "Will dispatch\neligible recipients" {
   style.stroke: "#f59e0b"
   style.stroke-width: 2
   style.stroke-dash: 6
@@ -421,7 +373,7 @@ composition.core.validation.control.job -> composition.core.validation.execution
   style.border-radius: 8
   style.bold: false
 }
-composition.core.validation.execution.p2.smtp -> composition.external.delivery_infrastructure.mail: "Will perform conservative\nrecipient handshakes" {
+composition.validation.p2.smtp -> composition.external.mail: "Will perform conservative\nrecipient handshakes" {
   style.stroke: "#f59e0b"
   style.stroke-width: 2
   style.stroke-dash: 6
@@ -431,7 +383,7 @@ composition.core.validation.execution.p2.smtp -> composition.external.delivery_i
   style.border-radius: 8
   style.bold: false
 }
-composition.core.validation.execution.p2.smtp -> composition.core.validation.control.job: "Will return typed\nSMTP evidence" {
+composition.validation.p2.smtp -> composition.validation.control.job: "Will return typed\nSMTP evidence" {
   style.stroke: "#f59e0b"
   style.stroke-width: 2
   style.stroke-dash: 6
