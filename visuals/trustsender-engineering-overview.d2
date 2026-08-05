@@ -1,0 +1,395 @@
+vars: {
+  d2-config: {
+    layout-engine: elk
+    theme-id: 200
+  }
+}
+
+direction: down
+
+style.fill: "#1E1E2E"
+
+header: {
+  label: ""
+  near: top-center
+  grid-rows: 2
+  grid-gap: 8
+  style.fill: "#1E1E2E"
+  style.stroke: transparent
+
+  title_text: "TrustSender.io Engineering Overview" {
+    shape: text
+    style: {
+      fill: transparent
+      stroke: transparent
+      font-color: "#edf3ff"
+      font-size: 32
+      bold: true
+    }
+  }
+  subtitle_text: "P1 distributed validation is operational; P2 SMTP evolution remains ONGOING." {
+    shape: text
+    style: {
+      fill: transparent
+      stroke: transparent
+      font-color: "#cbd5e1"
+      font-size: 18
+      bold: false
+    }
+  }
+}
+
+classes: {
+  operational: {
+    style: {
+      stroke: "#8bb8ff"
+      stroke-width: 2
+      fill: "#172033"
+      font-color: "#edf3ff"
+    }
+  }
+  ongoing: {
+    style: {
+      stroke: "#f59e0b"
+      stroke-width: 2
+      stroke-dash: 6
+      fill: "#2a2115"
+      font-color: "#ffe7b0"
+    }
+  }
+  external: {
+    style: {
+      stroke: "#94a3b8"
+      stroke-width: 2
+      fill: "#151b26"
+      font-color: "#e2e8f0"
+    }
+  }
+  data: {
+    shape: cylinder
+    style: {
+      stroke: "#60a5fa"
+      stroke-width: 3
+      fill: "#10243f"
+      font-color: "#dbeafe"
+    }
+  }
+  area: {
+    style: {
+      stroke: "#334155"
+      stroke-width: 2
+      border-radius: 12
+      fill: "#0f172a"
+      font-color: "#cbd5e1"
+      font-size: 18
+      bold: true
+    }
+  }
+}
+
+composition: {
+  label: ""
+  style.fill: "#1E1E2E"
+  style.stroke: transparent
+
+  users: {
+    label: "1. Users"
+    class: area
+    customer: "Customer" {
+      class: operational
+      width: 190
+      height: 70
+    }
+    operator: "Platform Operator" {
+      class: operational
+      width: 190
+      height: 70
+    }
+  }
+
+  experience: {
+    label: "2. Experience and Routing\nPublic access and experience"
+    class: area
+    edge: "Edge and Routing" {
+      class: operational
+      width: 260
+      height: 120
+    }
+    web: "Web Application" {
+      class: operational
+      width: 230
+      height: 90
+    }
+    blog: "WordPress Blog\nEditorial route; isolated from application authority" {
+      class: operational
+      width: 270
+      height: 105
+    }
+  }
+
+  authority: {
+    label: "3. Application Authority and Data\nApplication authority"
+    class: area
+    api: "Application API" {
+      class: operational
+      width: 320
+      height: 180
+    }
+    db: "PostgreSQL Database\nAuthoritative data store" {
+      class: data
+      width: 300
+      height: 125
+    }
+  }
+
+  validation: {
+    label: "4. Validation Control and Execution"
+    class: area
+    control: {
+      label: "Job orchestration"
+      class: area
+      job: "Job Control Plane" {
+        class: operational
+        width: 320
+        height: 170
+      }
+    }
+    p1: {
+      label: "Operational P1 execution"
+      class: area
+      workers: "Distributed P1 Worker Plane\nOperational" {
+        class: operational
+        width: 340
+        height: 160
+      }
+    }
+    p2: {
+      label: "Ongoing P2 evolution"
+      class: area
+      smtp: "P2 SMTP Execution Plane\nONGOING" {
+        class: ongoing
+        width: 340
+        height: 160
+      }
+    }
+  }
+
+  external: {
+    label: "5. External Services and Infrastructure\nExternal dependencies"
+    class: area
+    google: "Google Identity" {
+      class: external
+      width: 210
+      height: 75
+    }
+    microsoft: "Microsoft Identity" {
+      class: external
+      width: 210
+      height: 75
+    }
+    stripe: "Stripe" {
+      class: external
+      width: 210
+      height: 75
+    }
+    brevo: "Brevo" {
+      class: external
+      width: 210
+      height: 75
+    }
+    gha: "GitHub Actions\nExternal CI/CD and deployment automation" {
+      class: external
+      width: 270
+      height: 95
+    }
+    mail: "Internet Mail Infrastructure\nExternal" {
+      class: external
+      width: 280
+      height: 110
+    }
+  }
+}
+
+composition.users.customer -> composition.experience.edge: "Accesses" {
+  style.stroke: "#8bb8ff"
+  style.stroke-width: 2
+  style.font-size: 13
+  style.font-color: "#dbeafe"
+  style.fill: "#1E1E2E"
+  style.border-radius: 8
+  style.bold: false
+}
+composition.users.operator -> composition.experience.edge: "Accesses approved\ninterfaces" {
+  style.stroke: "#8bb8ff"
+  style.stroke-width: 2
+  style.font-size: 13
+  style.font-color: "#dbeafe"
+  style.fill: "#1E1E2E"
+  style.border-radius: 8
+  style.bold: false
+}
+composition.experience.edge -> composition.experience.web: "Routes application\ntraffic" {
+  style.stroke: "#8bb8ff"
+  style.stroke-width: 2
+  style.font-size: 13
+  style.font-color: "#dbeafe"
+  style.fill: "#1E1E2E"
+  style.border-radius: 8
+  style.bold: false
+}
+composition.experience.edge -> composition.authority.api: "Routes API traffic" {
+  style.stroke: "#8bb8ff"
+  style.stroke-width: 2
+  style.font-size: 13
+  style.font-color: "#dbeafe"
+  style.fill: "#1E1E2E"
+  style.border-radius: 8
+  style.bold: false
+}
+composition.experience.edge -> composition.experience.blog: "Routes blog traffic" {
+  style.stroke: "#8bb8ff"
+  style.stroke-width: 2
+  style.font-size: 13
+  style.font-color: "#dbeafe"
+  style.fill: "#1E1E2E"
+  style.border-radius: 8
+  style.bold: false
+}
+composition.experience.web -> composition.authority.api: "Uses" {
+  style.stroke: "#8bb8ff"
+  style.stroke-width: 2
+  style.font-size: 13
+  style.font-color: "#dbeafe"
+  style.fill: "#1E1E2E"
+  style.border-radius: 8
+  style.bold: false
+}
+composition.authority.api -> composition.authority.db: "Reads and writes\nauthoritative application data" {
+  style.stroke: "#8bb8ff"
+  style.stroke-width: 2
+  style.font-size: 13
+  style.font-color: "#dbeafe"
+  style.fill: "#1E1E2E"
+  style.border-radius: 8
+  style.bold: false
+}
+composition.authority.api -> composition.validation.control.job: "Submits and\nmanages jobs" {
+  style.stroke: "#8bb8ff"
+  style.stroke-width: 2
+  style.font-size: 13
+  style.font-color: "#dbeafe"
+  style.fill: "#1E1E2E"
+  style.border-radius: 8
+  style.bold: false
+}
+composition.validation.control.job -> composition.authority.db: "Reads and writes\nlifecycle state" {
+  style.stroke: "#8bb8ff"
+  style.stroke-width: 2
+  style.font-size: 13
+  style.font-color: "#dbeafe"
+  style.fill: "#1E1E2E"
+  style.border-radius: 8
+  style.bold: false
+}
+composition.validation.control.job -> composition.validation.p1.workers: "Dispatches\nauthorized work" {
+  style.stroke: "#8bb8ff"
+  style.stroke-width: 2
+  style.font-size: 13
+  style.font-color: "#dbeafe"
+  style.fill: "#1E1E2E"
+  style.border-radius: 8
+  style.bold: false
+}
+composition.validation.p1.workers -> composition.external.mail: "Queries for current P1\nvalidation evidence" {
+  style.stroke: "#8bb8ff"
+  style.stroke-width: 2
+  style.font-size: 13
+  style.font-color: "#dbeafe"
+  style.fill: "#1E1E2E"
+  style.border-radius: 8
+  style.bold: false
+}
+composition.validation.p1.workers -> composition.validation.control.job: "Returns progress, evidence,\nand artifacts" {
+  style.stroke: "#8bb8ff"
+  style.stroke-width: 2
+  style.font-size: 13
+  style.font-color: "#dbeafe"
+  style.fill: "#1E1E2E"
+  style.border-radius: 8
+  style.bold: false
+}
+composition.authority.api -> composition.external.google: "Uses for federated\nauthentication" {
+  style.stroke: "#8bb8ff"
+  style.stroke-width: 2
+  style.font-size: 13
+  style.font-color: "#dbeafe"
+  style.fill: "#1E1E2E"
+  style.border-radius: 8
+  style.bold: false
+}
+composition.authority.api -> composition.external.microsoft: "Uses for federated\nauthentication" {
+  style.stroke: "#8bb8ff"
+  style.stroke-width: 2
+  style.font-size: 13
+  style.font-color: "#dbeafe"
+  style.fill: "#1E1E2E"
+  style.border-radius: 8
+  style.bold: false
+}
+composition.authority.api -> composition.external.stripe: "Coordinates checkout and\nsigned payment events" {
+  style.stroke: "#8bb8ff"
+  style.stroke-width: 2
+  style.font-size: 13
+  style.font-color: "#dbeafe"
+  style.fill: "#1E1E2E"
+  style.border-radius: 8
+  style.bold: false
+}
+composition.authority.api -> composition.external.brevo: "Requests transactional and\noperational email" {
+  style.stroke: "#8bb8ff"
+  style.stroke-width: 2
+  style.font-size: 13
+  style.font-color: "#dbeafe"
+  style.fill: "#1E1E2E"
+  style.border-radius: 8
+  style.bold: false
+}
+composition.external.gha -> composition.experience.edge: "Builds and deploys\nreviewed releases" {
+  style.stroke: "#8bb8ff"
+  style.stroke-width: 2
+  style.font-size: 13
+  style.font-color: "#dbeafe"
+  style.fill: "#1E1E2E"
+  style.border-radius: 8
+  style.bold: false
+}
+composition.validation.control.job -> composition.validation.p2.smtp: "Will dispatch\neligible recipients" {
+  style.stroke: "#f59e0b"
+  style.stroke-width: 2
+  style.stroke-dash: 6
+  style.font-size: 13
+  style.font-color: "#ffe7b0"
+  style.fill: "#1E1E2E"
+  style.border-radius: 8
+  style.bold: false
+}
+composition.validation.p2.smtp -> composition.external.mail: "Will perform conservative\nrecipient handshakes" {
+  style.stroke: "#f59e0b"
+  style.stroke-width: 2
+  style.stroke-dash: 6
+  style.font-size: 13
+  style.font-color: "#ffe7b0"
+  style.fill: "#1E1E2E"
+  style.border-radius: 8
+  style.bold: false
+}
+composition.validation.p2.smtp -> composition.validation.control.job: "Will return typed\nSMTP evidence" {
+  style.stroke: "#f59e0b"
+  style.stroke-width: 2
+  style.stroke-dash: 6
+  style.font-size: 13
+  style.font-color: "#ffe7b0"
+  style.fill: "#1E1E2E"
+  style.border-radius: 8
+  style.bold: false
+}
