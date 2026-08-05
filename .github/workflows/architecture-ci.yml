@@ -8,7 +8,7 @@ on:
       - tests/**
       - .github/workflows/architecture-ci.yml
       - README.md
-      - diagrams/README.md
+      - diagrams/**
   push:
     branches:
       - main
@@ -18,7 +18,7 @@ on:
       - tests/**
       - .github/workflows/architecture-ci.yml
       - README.md
-      - diagrams/README.md
+      - diagrams/**
   workflow_dispatch:
 
 permissions:
@@ -93,6 +93,76 @@ jobs:
             echo "Error: generated SVG content was written under diagrams/." >&2
             exit 1
           fi
+
+
+      - name: Verify published Container View
+        shell: bash
+        run: |
+          set -euo pipefail
+          generated_svg=build/architecture-svg/trustsender-container-view.svg
+          committed_svg=diagrams/trustsender-container-view.svg
+          for svg_file in "${generated_svg}" "${committed_svg}"; do
+            if [[ ! -f "${svg_file}" ]] || [[ -L "${svg_file}" ]] || [[ ! -s "${svg_file}" ]]; then
+              echo "Error: expected regular, non-symbolic-link, non-empty SVG file: ${svg_file}" >&2
+              exit 1
+            fi
+          done
+          python3 - "${generated_svg}" "${committed_svg}" <<'PY'
+          from pathlib import Path
+          import hashlib
+          import re
+          import sys
+          import xml.etree.ElementTree as ET
+
+          generated_path = Path(sys.argv[1])
+          committed_path = Path(sys.argv[2])
+          approved_committed_hash = "04730d386c49d66a1fa624e3db8a0fd077b636a3133cf8ec007f54e9090a731e"
+          timestamp_re = re.compile(
+              rb"(?:Monday|Tuesday|Wednesday|Thursday|Friday|Saturday|Sunday), "
+              rb"(?:January|February|March|April|May|June|July|August|September|October|November|December) "
+              rb"(?:[1-9]|[12][0-9]|3[01]), "
+              rb"[0-9]{4} at "
+              rb"(?:[1-9]|1[0-2]):[0-5][0-9] "
+              rb"(?:AM|PM) Coordinated Universal Time"
+          )
+          replacement = b"STRUCTURIZR_RENDER_TIMESTAMP"
+
+          def read_svg(path):
+              data = path.read_bytes()
+              print(f"{path}: raw SHA-256 {hashlib.sha256(data).hexdigest()}")
+              return data
+
+          def require_svg_shape(path, data):
+              root = ET.fromstring(data)
+              if root.tag.rsplit("}", 1)[-1] != "svg":
+                  raise SystemExit(f"{path}: root element is not svg")
+              if root.get("width") not in {"5000", "5000px"}:
+                  raise SystemExit(f"{path}: unexpected width {root.get('width')!r}")
+              if root.get("height") not in {"2200", "2200px"}:
+                  raise SystemExit(f"{path}: unexpected height {root.get('height')!r}")
+              view_box = root.get("viewBox")
+              if view_box is None or " ".join(view_box.split()) != "0 0 5000 2200":
+                  raise SystemExit(f"{path}: unexpected viewBox {view_box!r}")
+
+          def normalize_timestamp(path, data):
+              matches = list(timestamp_re.finditer(data))
+              if len(matches) != 1:
+                  raise SystemExit(f"{path}: expected exactly one Structurizr render timestamp, found {len(matches)}")
+              return timestamp_re.sub(replacement, data, count=1)
+
+          generated_data = read_svg(generated_path)
+          committed_data = read_svg(committed_path)
+          committed_hash = hashlib.sha256(committed_data).hexdigest()
+          if committed_hash != approved_committed_hash:
+              raise SystemExit(f"{committed_path}: unexpected raw SHA-256 {committed_hash}")
+          for path, data in ((generated_path, generated_data), (committed_path, committed_data)):
+              require_svg_shape(path, data)
+          normalized_generated = normalize_timestamp(generated_path, generated_data)
+          normalized_committed = normalize_timestamp(committed_path, committed_data)
+          if normalized_generated != normalized_committed:
+              raise SystemExit("Generated and committed Container View SVG differ after timestamp normalization")
+          print("Normalized Container View SVG SHA-256", hashlib.sha256(normalized_committed).hexdigest())
+          PY
 
       - name: Upload dark-mode SVG previews
         uses: actions/upload-artifact@v4
