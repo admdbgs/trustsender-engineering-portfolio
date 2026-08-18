@@ -1,0 +1,627 @@
+{
+  "configuration" : {
+    "scope" : "Landscape"
+  },
+  "description" : "Presentation-only manual Flow Graph POC inspired by Structurizr Explore.",
+  "documentation" : { },
+  "id" : 1,
+  "lastModifiedDate" : "2026-08-11T18:28:08Z",
+  "model" : {
+    "people" : [ {
+      "description" : "Operates and reviews the platform through approved interfaces.",
+      "id" : "1",
+      "name" : "Platform Operator",
+      "properties" : {
+        "structurizr.dsl.identifier" : "pocPlatformOperator"
+      },
+      "relationships" : [ {
+        "description" : "Accesses approved interfaces",
+        "destinationId" : "5",
+        "id" : "18",
+        "properties" : {
+          "semanticDescription" : "Accesses approved interfaces"
+        },
+        "sourceId" : "1",
+        "tags" : "Relationship,POC-Operational"
+      } ],
+      "tags" : "Element,Person,POC,POC-User"
+    }, {
+      "description" : "Uses the TrustSender.io product through the public application.",
+      "id" : "2",
+      "name" : "Customer",
+      "properties" : {
+        "structurizr.dsl.identifier" : "pocCustomer"
+      },
+      "relationships" : [ {
+        "description" : "Accesses",
+        "destinationId" : "5",
+        "id" : "17",
+        "properties" : {
+          "semanticDescription" : "Accesses"
+        },
+        "sourceId" : "2",
+        "tags" : "Relationship,POC-Operational"
+      } ],
+      "tags" : "Element,Person,POC,POC-User"
+    } ],
+    "softwareSystems" : [ {
+      "description" : "Builds and deploys reviewed releases through the CI/CD workflow.",
+      "documentation" : { },
+      "id" : "3",
+      "name" : "GitHub Actions",
+      "properties" : {
+        "structurizr.dsl.identifier" : "pocGithubActions"
+      },
+      "relationships" : [ {
+        "description" : "Builds and deploys reviewed releases",
+        "destinationId" : "5",
+        "id" : "19",
+        "properties" : {
+          "semanticDescription" : "Builds and deploys reviewed releases"
+        },
+        "sourceId" : "3",
+        "tags" : "Relationship,POC-Operational"
+      } ],
+      "tags" : "Element,Software System,POC,POC-External"
+    }, {
+      "description" : "Serves public editorial content for the TrustSender.io blog.",
+      "documentation" : { },
+      "id" : "4",
+      "name" : "WordPress Blog",
+      "properties" : {
+        "structurizr.dsl.identifier" : "pocWordPressBlog"
+      },
+      "tags" : "Element,Software System,POC,POC-Editorial"
+    }, {
+      "description" : "Routes public application, API, and blog traffic.",
+      "documentation" : { },
+      "id" : "5",
+      "name" : "Edge and Routing",
+      "properties" : {
+        "structurizr.dsl.identifier" : "pocEdge"
+      },
+      "relationships" : [ {
+        "description" : "Routes application traffic",
+        "destinationId" : "6",
+        "id" : "20",
+        "properties" : {
+          "semanticDescription" : "Routes application traffic"
+        },
+        "sourceId" : "5",
+        "tags" : "Relationship,POC-Operational"
+      }, {
+        "description" : "Routes API traffic",
+        "destinationId" : "7",
+        "id" : "21",
+        "properties" : {
+          "semanticDescription" : "Routes API traffic"
+        },
+        "sourceId" : "5",
+        "tags" : "Relationship,POC-Operational"
+      }, {
+        "description" : "Routes blog traffic",
+        "destinationId" : "4",
+        "id" : "22",
+        "properties" : {
+          "semanticDescription" : "Routes blog traffic"
+        },
+        "sourceId" : "5",
+        "tags" : "Relationship,POC-Operational"
+      } ],
+      "tags" : "Element,Software System,POC,POC-Edge"
+    }, {
+      "description" : "Provides the public and authenticated TrustSender.io web experience.",
+      "documentation" : { },
+      "id" : "6",
+      "name" : "Web Application",
+      "properties" : {
+        "structurizr.dsl.identifier" : "pocWebApplication"
+      },
+      "relationships" : [ {
+        "description" : "Uses",
+        "destinationId" : "7",
+        "id" : "23",
+        "properties" : {
+          "semanticDescription" : "Uses"
+        },
+        "sourceId" : "6",
+        "tags" : "Relationship,POC-Operational"
+      } ],
+      "tags" : "Element,Software System,POC,POC-Operational"
+    }, {
+      "description" : "Provides authenticated application services and coordinates core platform workflows.",
+      "documentation" : { },
+      "id" : "7",
+      "name" : "Application API",
+      "properties" : {
+        "structurizr.dsl.identifier" : "pocApplicationApi"
+      },
+      "relationships" : [ {
+        "description" : "Reads and writes authoritative application data",
+        "destinationId" : "8",
+        "id" : "24",
+        "properties" : {
+          "semanticDescription" : "Reads and writes authoritative application data"
+        },
+        "sourceId" : "7",
+        "tags" : "Relationship,POC-Operational"
+      }, {
+        "description" : "Submits and manages jobs",
+        "destinationId" : "13",
+        "id" : "25",
+        "properties" : {
+          "semanticDescription" : "Submits and manages jobs"
+        },
+        "sourceId" : "7",
+        "tags" : "Relationship,POC-Operational"
+      }, {
+        "description" : "Uses for federated authentication",
+        "destinationId" : "10",
+        "id" : "30",
+        "properties" : {
+          "semanticDescription" : "Uses for federated authentication"
+        },
+        "sourceId" : "7",
+        "tags" : "Relationship,POC-Operational"
+      }, {
+        "description" : "Uses for federated authentication",
+        "destinationId" : "9",
+        "id" : "31",
+        "properties" : {
+          "semanticDescription" : "Uses for federated authentication"
+        },
+        "sourceId" : "7",
+        "tags" : "Relationship,POC-Operational"
+      }, {
+        "description" : "Coordinates checkout and signed payment events",
+        "destinationId" : "11",
+        "id" : "32",
+        "properties" : {
+          "semanticDescription" : "Coordinates checkout and signed payment events"
+        },
+        "sourceId" : "7",
+        "tags" : "Relationship,POC-Operational"
+      }, {
+        "description" : "Requests transactional and operational email",
+        "destinationId" : "12",
+        "id" : "33",
+        "properties" : {
+          "semanticDescription" : "Requests transactional and operational email"
+        },
+        "sourceId" : "7",
+        "tags" : "Relationship,POC-Operational"
+      } ],
+      "tags" : "Element,Software System,POC,POC-Operational"
+    }, {
+      "description" : "Stores authoritative application, job, billing, and lifecycle data.",
+      "documentation" : { },
+      "id" : "8",
+      "name" : "PostgreSQL Database",
+      "properties" : {
+        "structurizr.dsl.identifier" : "pocDatabase"
+      },
+      "tags" : "Element,Software System,POC,POC-Operational"
+    }, {
+      "description" : "Provides Microsoft federated identity services.",
+      "documentation" : { },
+      "id" : "9",
+      "name" : "Microsoft Identity",
+      "properties" : {
+        "structurizr.dsl.identifier" : "pocMicrosoftIdentity"
+      },
+      "tags" : "Element,Software System,POC,POC-External"
+    }, {
+      "description" : "Provides Google federated identity services.",
+      "documentation" : { },
+      "id" : "10",
+      "name" : "Google Identity",
+      "properties" : {
+        "structurizr.dsl.identifier" : "pocGoogleIdentity"
+      },
+      "tags" : "Element,Software System,POC,POC-External"
+    }, {
+      "description" : "Provides checkout and signed payment event services.",
+      "documentation" : { },
+      "id" : "11",
+      "name" : "Stripe",
+      "properties" : {
+        "structurizr.dsl.identifier" : "pocStripe"
+      },
+      "tags" : "Element,Software System,POC,POC-External"
+    }, {
+      "description" : "Provides transactional and operational email delivery.",
+      "documentation" : { },
+      "id" : "12",
+      "name" : "Brevo",
+      "properties" : {
+        "structurizr.dsl.identifier" : "pocBrevo"
+      },
+      "tags" : "Element,Software System,POC,POC-External"
+    }, {
+      "description" : "Coordinates validation job lifecycle, dispatch, progress, and evidence.",
+      "documentation" : { },
+      "id" : "13",
+      "name" : "Job Control Plane",
+      "properties" : {
+        "structurizr.dsl.identifier" : "pocJobControl"
+      },
+      "relationships" : [ {
+        "description" : "Reads and writes lifecycle state",
+        "destinationId" : "8",
+        "id" : "26",
+        "properties" : {
+          "semanticDescription" : "Reads and writes lifecycle state"
+        },
+        "sourceId" : "13",
+        "tags" : "Relationship,POC-Operational"
+      }, {
+        "description" : "Dispatches authorized work",
+        "destinationId" : "14",
+        "id" : "27",
+        "properties" : {
+          "semanticDescription" : "Dispatches authorized work"
+        },
+        "sourceId" : "13",
+        "tags" : "Relationship,POC-Operational"
+      }, {
+        "description" : "Will dispatch eligible recipients",
+        "destinationId" : "15",
+        "id" : "34",
+        "properties" : {
+          "semanticDescription" : "Will dispatch eligible recipients"
+        },
+        "sourceId" : "13",
+        "tags" : "Relationship,POC-Ongoing"
+      } ],
+      "tags" : "Element,Software System,POC,POC-Operational"
+    }, {
+      "description" : "Operational",
+      "documentation" : { },
+      "id" : "14",
+      "name" : "Distributed P1 Worker Plane",
+      "properties" : {
+        "structurizr.dsl.identifier" : "pocP1Workers"
+      },
+      "relationships" : [ {
+        "description" : "Returns progress, evidence, and artifacts",
+        "destinationId" : "13",
+        "id" : "28",
+        "properties" : {
+          "semanticDescription" : "Returns progress, evidence, and artifacts"
+        },
+        "sourceId" : "14",
+        "tags" : "Relationship,POC-Operational"
+      }, {
+        "description" : "Queries for current P1 validation evidence",
+        "destinationId" : "16",
+        "id" : "29",
+        "properties" : {
+          "semanticDescription" : "Queries for current P1 validation evidence"
+        },
+        "sourceId" : "14",
+        "tags" : "Relationship,POC-Operational"
+      } ],
+      "tags" : "Element,Software System,POC,POC-Operational"
+    }, {
+      "description" : "ONGOING",
+      "documentation" : { },
+      "id" : "15",
+      "name" : "P2 SMTP Execution Plane",
+      "properties" : {
+        "structurizr.dsl.identifier" : "pocP2Smtp"
+      },
+      "relationships" : [ {
+        "description" : "Will return typed SMTP evidence",
+        "destinationId" : "13",
+        "id" : "35",
+        "properties" : {
+          "semanticDescription" : "Will return typed SMTP evidence"
+        },
+        "sourceId" : "15",
+        "tags" : "Relationship,POC-Ongoing"
+      }, {
+        "description" : "Will perform conservative recipient handshakes",
+        "destinationId" : "16",
+        "id" : "36",
+        "properties" : {
+          "semanticDescription" : "Will perform conservative recipient handshakes"
+        },
+        "sourceId" : "15",
+        "tags" : "Relationship,POC-Ongoing"
+      } ],
+      "tags" : "Element,Software System,POC,POC-Ongoing"
+    }, {
+      "description" : "Represents external DNS and mail systems queried during email validation.",
+      "documentation" : { },
+      "id" : "16",
+      "name" : "Internet Mail Infrastructure",
+      "properties" : {
+        "structurizr.dsl.identifier" : "pocInternetMail"
+      },
+      "tags" : "Element,Software System,POC,POC-External"
+    } ]
+  },
+  "name" : "TrustSender.io Engineering Overview Flow Graph POC",
+  "properties" : {
+    "structurizr.inspection.error" : "0",
+    "structurizr.inspection.model.relationship.technology" : "info",
+    "structurizr.inspection.views.styles.element.metadata" : "info",
+    "structurizr.dsl" : "d29ya3NwYWNlICJUcnVzdFNlbmRlci5pbyBFbmdpbmVlcmluZyBPdmVydmlldyBGbG93IEdyYXBoIFBPQyIgIlByZXNlbnRhdGlvbi1vbmx5IG1hbnVhbCBGbG93IEdyYXBoIFBPQyBpbnNwaXJlZCBieSBTdHJ1Y3R1cml6ciBFeHBsb3JlLiIgew0KICAgIHByb3BlcnRpZXMgew0KICAgICAgICAic3RydWN0dXJpenIuaW5zcGVjdGlvbi5tb2RlbC5yZWxhdGlvbnNoaXAudGVjaG5vbG9neSIgImluZm8iDQogICAgICAgICJzdHJ1Y3R1cml6ci5pbnNwZWN0aW9uLnZpZXdzLnN0eWxlcy5lbGVtZW50Lm1ldGFkYXRhIiAiaW5mbyINCiAgICB9DQoNCiAgICBtb2RlbCB7DQogICAgICAgIHBvY1BsYXRmb3JtT3BlcmF0b3IgPSBwZXJzb24gIlBsYXRmb3JtIE9wZXJhdG9yIiAiT3BlcmF0ZXMgYW5kIHJldmlld3MgdGhlIHBsYXRmb3JtIHRocm91Z2ggYXBwcm92ZWQgaW50ZXJmYWNlcy4iICJQT0MsUE9DLVVzZXIiDQogICAgICAgIHBvY0N1c3RvbWVyID0gcGVyc29uICJDdXN0b21lciIgIlVzZXMgdGhlIFRydXN0U2VuZGVyLmlvIHByb2R1Y3QgdGhyb3VnaCB0aGUgcHVibGljIGFwcGxpY2F0aW9uLiIgIlBPQyxQT0MtVXNlciINCg0KICAgICAgICBwb2NHaXRodWJBY3Rpb25zID0gc29mdHdhcmVTeXN0ZW0gIkdpdEh1YiBBY3Rpb25zIiAiQnVpbGRzIGFuZCBkZXBsb3lzIHJldmlld2VkIHJlbGVhc2VzIHRocm91Z2ggdGhlIENJL0NEIHdvcmtmbG93LiIgIlBPQyxQT0MtRXh0ZXJuYWwiDQogICAgICAgIHBvY1dvcmRQcmVzc0Jsb2cgPSBzb2Z0d2FyZVN5c3RlbSAiV29yZFByZXNzIEJsb2ciICJTZXJ2ZXMgcHVibGljIGVkaXRvcmlhbCBjb250ZW50IGZvciB0aGUgVHJ1c3RTZW5kZXIuaW8gYmxvZy4iICJQT0MsUE9DLUVkaXRvcmlhbCINCiAgICAgICAgcG9jRWRnZSA9IHNvZnR3YXJlU3lzdGVtICJFZGdlIGFuZCBSb3V0aW5nIiAiUm91dGVzIHB1YmxpYyBhcHBsaWNhdGlvbiwgQVBJLCBhbmQgYmxvZyB0cmFmZmljLiIgIlBPQyxQT0MtRWRnZSINCiAgICAgICAgcG9jV2ViQXBwbGljYXRpb24gPSBzb2Z0d2FyZVN5c3RlbSAiV2ViIEFwcGxpY2F0aW9uIiAiUHJvdmlkZXMgdGhlIHB1YmxpYyBhbmQgYXV0aGVudGljYXRlZCBUcnVzdFNlbmRlci5pbyB3ZWIgZXhwZXJpZW5jZS4iICJQT0MsUE9DLU9wZXJhdGlvbmFsIg0KICAgICAgICBwb2NBcHBsaWNhdGlvbkFwaSA9IHNvZnR3YXJlU3lzdGVtICJBcHBsaWNhdGlvbiBBUEkiICJQcm92aWRlcyBhdXRoZW50aWNhdGVkIGFwcGxpY2F0aW9uIHNlcnZpY2VzIGFuZCBjb29yZGluYXRlcyBjb3JlIHBsYXRmb3JtIHdvcmtmbG93cy4iICJQT0MsUE9DLU9wZXJhdGlvbmFsIg0KICAgICAgICBwb2NEYXRhYmFzZSA9IHNvZnR3YXJlU3lzdGVtICJQb3N0Z3JlU1FMIERhdGFiYXNlIiAiU3RvcmVzIGF1dGhvcml0YXRpdmUgYXBwbGljYXRpb24sIGpvYiwgYmlsbGluZywgYW5kIGxpZmVjeWNsZSBkYXRhLiIgIlBPQyxQT0MtT3BlcmF0aW9uYWwiDQogICAgICAgIHBvY01pY3Jvc29mdElkZW50aXR5ID0gc29mdHdhcmVTeXN0ZW0gIk1pY3Jvc29mdCBJZGVudGl0eSIgIlByb3ZpZGVzIE1pY3Jvc29mdCBmZWRlcmF0ZWQgaWRlbnRpdHkgc2VydmljZXMuIiAiUE9DLFBPQy1FeHRlcm5hbCINCiAgICAgICAgcG9jR29vZ2xlSWRlbnRpdHkgPSBzb2Z0d2FyZVN5c3RlbSAiR29vZ2xlIElkZW50aXR5IiAiUHJvdmlkZXMgR29vZ2xlIGZlZGVyYXRlZCBpZGVudGl0eSBzZXJ2aWNlcy4iICJQT0MsUE9DLUV4dGVybmFsIg0KICAgICAgICBwb2NTdHJpcGUgPSBzb2Z0d2FyZVN5c3RlbSAiU3RyaXBlIiAiUHJvdmlkZXMgY2hlY2tvdXQgYW5kIHNpZ25lZCBwYXltZW50IGV2ZW50IHNlcnZpY2VzLiIgIlBPQyxQT0MtRXh0ZXJuYWwiDQogICAgICAgIHBvY0JyZXZvID0gc29mdHdhcmVTeXN0ZW0gIkJyZXZvIiAiUHJvdmlkZXMgdHJhbnNhY3Rpb25hbCBhbmQgb3BlcmF0aW9uYWwgZW1haWwgZGVsaXZlcnkuIiAiUE9DLFBPQy1FeHRlcm5hbCINCiAgICAgICAgcG9jSm9iQ29udHJvbCA9IHNvZnR3YXJlU3lzdGVtICJKb2IgQ29udHJvbCBQbGFuZSIgIkNvb3JkaW5hdGVzIHZhbGlkYXRpb24gam9iIGxpZmVjeWNsZSwgZGlzcGF0Y2gsIHByb2dyZXNzLCBhbmQgZXZpZGVuY2UuIiAiUE9DLFBPQy1PcGVyYXRpb25hbCINCiAgICAgICAgcG9jUDFXb3JrZXJzID0gc29mdHdhcmVTeXN0ZW0gIkRpc3RyaWJ1dGVkIFAxIFdvcmtlciBQbGFuZSIgIk9wZXJhdGlvbmFsIiAiUE9DLFBPQy1PcGVyYXRpb25hbCINCiAgICAgICAgcG9jUDJTbXRwID0gc29mdHdhcmVTeXN0ZW0gIlAyIFNNVFAgRXhlY3V0aW9uIFBsYW5lIiAiT05HT0lORyIgIlBPQyxQT0MtT25nb2luZyINCiAgICAgICAgcG9jSW50ZXJuZXRNYWlsID0gc29mdHdhcmVTeXN0ZW0gIkludGVybmV0IE1haWwgSW5mcmFzdHJ1Y3R1cmUiICJSZXByZXNlbnRzIGV4dGVybmFsIEROUyBhbmQgbWFpbCBzeXN0ZW1zIHF1ZXJpZWQgZHVyaW5nIGVtYWlsIHZhbGlkYXRpb24uIiAiUE9DLFBPQy1FeHRlcm5hbCINCg0KICAgICAgICBwb2NDdXN0b21lciAtPiBwb2NFZGdlICJBY2Nlc3NlcyIgIiIgIlBPQy1PcGVyYXRpb25hbCIgew0KICAgICAgICAgICAgcHJvcGVydGllcyB7DQogICAgICAgICAgICAgICAgInNlbWFudGljRGVzY3JpcHRpb24iICJBY2Nlc3NlcyINCiAgICAgICAgICAgIH0NCiAgICAgICAgfQ0KICAgICAgICBwb2NQbGF0Zm9ybU9wZXJhdG9yIC0+IHBvY0VkZ2UgIkFjY2Vzc2VzIGFwcHJvdmVkIGludGVyZmFjZXMiICIiICJQT0MtT3BlcmF0aW9uYWwiIHsNCiAgICAgICAgICAgIHByb3BlcnRpZXMgew0KICAgICAgICAgICAgICAgICJzZW1hbnRpY0Rlc2NyaXB0aW9uIiAiQWNjZXNzZXMgYXBwcm92ZWQgaW50ZXJmYWNlcyINCiAgICAgICAgICAgIH0NCiAgICAgICAgfQ0KICAgICAgICBwb2NHaXRodWJBY3Rpb25zIC0+IHBvY0VkZ2UgIkJ1aWxkcyBhbmQgZGVwbG95cyByZXZpZXdlZCByZWxlYXNlcyIgIiIgIlBPQy1PcGVyYXRpb25hbCIgew0KICAgICAgICAgICAgcHJvcGVydGllcyB7DQogICAgICAgICAgICAgICAgInNlbWFudGljRGVzY3JpcHRpb24iICJCdWlsZHMgYW5kIGRlcGxveXMgcmV2aWV3ZWQgcmVsZWFzZXMiDQogICAgICAgICAgICB9DQogICAgICAgIH0NCiAgICAgICAgcG9jRWRnZSAtPiBwb2NXZWJBcHBsaWNhdGlvbiAiUm91dGVzIGFwcGxpY2F0aW9uIHRyYWZmaWMiICIiICJQT0MtT3BlcmF0aW9uYWwiIHsNCiAgICAgICAgICAgIHByb3BlcnRpZXMgew0KICAgICAgICAgICAgICAgICJzZW1hbnRpY0Rlc2NyaXB0aW9uIiAiUm91dGVzIGFwcGxpY2F0aW9uIHRyYWZmaWMiDQogICAgICAgICAgICB9DQogICAgICAgIH0NCiAgICAgICAgcG9jRWRnZSAtPiBwb2NBcHBsaWNhdGlvbkFwaSAiUm91dGVzIEFQSSB0cmFmZmljIiAiIiAiUE9DLU9wZXJhdGlvbmFsIiB7DQogICAgICAgICAgICBwcm9wZXJ0aWVzIHsNCiAgICAgICAgICAgICAgICAic2VtYW50aWNEZXNjcmlwdGlvbiIgIlJvdXRlcyBBUEkgdHJhZmZpYyINCiAgICAgICAgICAgIH0NCiAgICAgICAgfQ0KICAgICAgICBwb2NFZGdlIC0+IHBvY1dvcmRQcmVzc0Jsb2cgIlJvdXRlcyBibG9nIHRyYWZmaWMiICIiICJQT0MtT3BlcmF0aW9uYWwiIHsNCiAgICAgICAgICAgIHByb3BlcnRpZXMgew0KICAgICAgICAgICAgICAgICJzZW1hbnRpY0Rlc2NyaXB0aW9uIiAiUm91dGVzIGJsb2cgdHJhZmZpYyINCiAgICAgICAgICAgIH0NCiAgICAgICAgfQ0KICAgICAgICBwb2NXZWJBcHBsaWNhdGlvbiAtPiBwb2NBcHBsaWNhdGlvbkFwaSAiVXNlcyIgIiIgIlBPQy1PcGVyYXRpb25hbCIgew0KICAgICAgICAgICAgcHJvcGVydGllcyB7DQogICAgICAgICAgICAgICAgInNlbWFudGljRGVzY3JpcHRpb24iICJVc2VzIg0KICAgICAgICAgICAgfQ0KICAgICAgICB9DQogICAgICAgIHBvY0FwcGxpY2F0aW9uQXBpIC0+IHBvY0RhdGFiYXNlICJSZWFkcyBhbmQgd3JpdGVzIGF1dGhvcml0YXRpdmUgYXBwbGljYXRpb24gZGF0YSIgIiIgIlBPQy1PcGVyYXRpb25hbCIgew0KICAgICAgICAgICAgcHJvcGVydGllcyB7DQogICAgICAgICAgICAgICAgInNlbWFudGljRGVzY3JpcHRpb24iICJSZWFkcyBhbmQgd3JpdGVzIGF1dGhvcml0YXRpdmUgYXBwbGljYXRpb24gZGF0YSINCiAgICAgICAgICAgIH0NCiAgICAgICAgfQ0KICAgICAgICBwb2NBcHBsaWNhdGlvbkFwaSAtPiBwb2NKb2JDb250cm9sICJTdWJtaXRzIGFuZCBtYW5hZ2VzIGpvYnMiICIiICJQT0MtT3BlcmF0aW9uYWwiIHsNCiAgICAgICAgICAgIHByb3BlcnRpZXMgew0KICAgICAgICAgICAgICAgICJzZW1hbnRpY0Rlc2NyaXB0aW9uIiAiU3VibWl0cyBhbmQgbWFuYWdlcyBqb2JzIg0KICAgICAgICAgICAgfQ0KICAgICAgICB9DQogICAgICAgIHBvY0pvYkNvbnRyb2wgLT4gcG9jRGF0YWJhc2UgIlJlYWRzIGFuZCB3cml0ZXMgbGlmZWN5Y2xlIHN0YXRlIiAiIiAiUE9DLU9wZXJhdGlvbmFsIiB7DQogICAgICAgICAgICBwcm9wZXJ0aWVzIHsNCiAgICAgICAgICAgICAgICAic2VtYW50aWNEZXNjcmlwdGlvbiIgIlJlYWRzIGFuZCB3cml0ZXMgbGlmZWN5Y2xlIHN0YXRlIg0KICAgICAgICAgICAgfQ0KICAgICAgICB9DQogICAgICAgIHBvY0pvYkNvbnRyb2wgLT4gcG9jUDFXb3JrZXJzICJEaXNwYXRjaGVzIGF1dGhvcml6ZWQgd29yayIgIiIgIlBPQy1PcGVyYXRpb25hbCIgew0KICAgICAgICAgICAgcHJvcGVydGllcyB7DQogICAgICAgICAgICAgICAgInNlbWFudGljRGVzY3JpcHRpb24iICJEaXNwYXRjaGVzIGF1dGhvcml6ZWQgd29yayINCiAgICAgICAgICAgIH0NCiAgICAgICAgfQ0KICAgICAgICBwb2NQMVdvcmtlcnMgLT4gcG9jSm9iQ29udHJvbCAiUmV0dXJucyBwcm9ncmVzcywgZXZpZGVuY2UsIGFuZCBhcnRpZmFjdHMiICIiICJQT0MtT3BlcmF0aW9uYWwiIHsNCiAgICAgICAgICAgIHByb3BlcnRpZXMgew0KICAgICAgICAgICAgICAgICJzZW1hbnRpY0Rlc2NyaXB0aW9uIiAiUmV0dXJucyBwcm9ncmVzcywgZXZpZGVuY2UsIGFuZCBhcnRpZmFjdHMiDQogICAgICAgICAgICB9DQogICAgICAgIH0NCiAgICAgICAgcG9jUDFXb3JrZXJzIC0+IHBvY0ludGVybmV0TWFpbCAiUXVlcmllcyBmb3IgY3VycmVudCBQMSB2YWxpZGF0aW9uIGV2aWRlbmNlIiAiIiAiUE9DLU9wZXJhdGlvbmFsIiB7DQogICAgICAgICAgICBwcm9wZXJ0aWVzIHsNCiAgICAgICAgICAgICAgICAic2VtYW50aWNEZXNjcmlwdGlvbiIgIlF1ZXJpZXMgZm9yIGN1cnJlbnQgUDEgdmFsaWRhdGlvbiBldmlkZW5jZSINCiAgICAgICAgICAgIH0NCiAgICAgICAgfQ0KICAgICAgICBwb2NBcHBsaWNhdGlvbkFwaSAtPiBwb2NHb29nbGVJZGVudGl0eSAiVXNlcyBmb3IgZmVkZXJhdGVkIGF1dGhlbnRpY2F0aW9uIiAiIiAiUE9DLU9wZXJhdGlvbmFsIiB7DQogICAgICAgICAgICBwcm9wZXJ0aWVzIHsNCiAgICAgICAgICAgICAgICAic2VtYW50aWNEZXNjcmlwdGlvbiIgIlVzZXMgZm9yIGZlZGVyYXRlZCBhdXRoZW50aWNhdGlvbiINCiAgICAgICAgICAgIH0NCiAgICAgICAgfQ0KICAgICAgICBwb2NBcHBsaWNhdGlvbkFwaSAtPiBwb2NNaWNyb3NvZnRJZGVudGl0eSAiVXNlcyBmb3IgZmVkZXJhdGVkIGF1dGhlbnRpY2F0aW9uIiAiIiAiUE9DLU9wZXJhdGlvbmFsIiB7DQogICAgICAgICAgICBwcm9wZXJ0aWVzIHsNCiAgICAgICAgICAgICAgICAic2VtYW50aWNEZXNjcmlwdGlvbiIgIlVzZXMgZm9yIGZlZGVyYXRlZCBhdXRoZW50aWNhdGlvbiINCiAgICAgICAgICAgIH0NCiAgICAgICAgfQ0KICAgICAgICBwb2NBcHBsaWNhdGlvbkFwaSAtPiBwb2NTdHJpcGUgIkNvb3JkaW5hdGVzIGNoZWNrb3V0IGFuZCBzaWduZWQgcGF5bWVudCBldmVudHMiICIiICJQT0MtT3BlcmF0aW9uYWwiIHsNCiAgICAgICAgICAgIHByb3BlcnRpZXMgew0KICAgICAgICAgICAgICAgICJzZW1hbnRpY0Rlc2NyaXB0aW9uIiAiQ29vcmRpbmF0ZXMgY2hlY2tvdXQgYW5kIHNpZ25lZCBwYXltZW50IGV2ZW50cyINCiAgICAgICAgICAgIH0NCiAgICAgICAgfQ0KICAgICAgICBwb2NBcHBsaWNhdGlvbkFwaSAtPiBwb2NCcmV2byAiUmVxdWVzdHMgdHJhbnNhY3Rpb25hbCBhbmQgb3BlcmF0aW9uYWwgZW1haWwiICIiICJQT0MtT3BlcmF0aW9uYWwiIHsNCiAgICAgICAgICAgIHByb3BlcnRpZXMgew0KICAgICAgICAgICAgICAgICJzZW1hbnRpY0Rlc2NyaXB0aW9uIiAiUmVxdWVzdHMgdHJhbnNhY3Rpb25hbCBhbmQgb3BlcmF0aW9uYWwgZW1haWwiDQogICAgICAgICAgICB9DQogICAgICAgIH0NCiAgICAgICAgcG9jSm9iQ29udHJvbCAtPiBwb2NQMlNtdHAgIldpbGwgZGlzcGF0Y2ggZWxpZ2libGUgcmVjaXBpZW50cyIgIiIgIlBPQy1PbmdvaW5nIiB7DQogICAgICAgICAgICBwcm9wZXJ0aWVzIHsNCiAgICAgICAgICAgICAgICAic2VtYW50aWNEZXNjcmlwdGlvbiIgIldpbGwgZGlzcGF0Y2ggZWxpZ2libGUgcmVjaXBpZW50cyINCiAgICAgICAgICAgIH0NCiAgICAgICAgfQ0KICAgICAgICBwb2NQMlNtdHAgLT4gcG9jSm9iQ29udHJvbCAiV2lsbCByZXR1cm4gdHlwZWQgU01UUCBldmlkZW5jZSIgIiIgIlBPQy1PbmdvaW5nIiB7DQogICAgICAgICAgICBwcm9wZXJ0aWVzIHsNCiAgICAgICAgICAgICAgICAic2VtYW50aWNEZXNjcmlwdGlvbiIgIldpbGwgcmV0dXJuIHR5cGVkIFNNVFAgZXZpZGVuY2UiDQogICAgICAgICAgICB9DQogICAgICAgIH0NCiAgICAgICAgcG9jUDJTbXRwIC0+IHBvY0ludGVybmV0TWFpbCAiV2lsbCBwZXJmb3JtIGNvbnNlcnZhdGl2ZSByZWNpcGllbnQgaGFuZHNoYWtlcyIgIiIgIlBPQy1PbmdvaW5nIiB7DQogICAgICAgICAgICBwcm9wZXJ0aWVzIHsNCiAgICAgICAgICAgICAgICAic2VtYW50aWNEZXNjcmlwdGlvbiIgIldpbGwgcGVyZm9ybSBjb25zZXJ2YXRpdmUgcmVjaXBpZW50IGhhbmRzaGFrZXMiDQogICAgICAgICAgICB9DQogICAgICAgIH0NCiAgICB9DQoNCiAgICB2aWV3cyB7DQogICAgICAgIHByb3BlcnRpZXMgew0KICAgICAgICAgICAgInN0cnVjdHVyaXpyLmxvY2FsZSIgImVuLUdCIg0KICAgICAgICAgICAgInN0cnVjdHVyaXpyLnRpbWV6b25lIiAiVVRDIg0KICAgICAgICB9DQoNCiAgICAgICAgc3lzdGVtTGFuZHNjYXBlICJ0cnVzdHNlbmRlci1lbmdpbmVlcmluZy1vdmVydmlldy1tYW51YWwtcG9jIiB7DQogICAgICAgICAgICB0aXRsZSAiVHJ1c3RTZW5kZXIuaW8gRW5naW5lZXJpbmcgT3ZlcnZpZXciDQogICAgICAgICAgICBkZXNjcmlwdGlvbiAiUDEgZGlzdHJpYnV0ZWQgdmFsaWRhdGlvbiBpcyBvcGVyYXRpb25hbDsgUDIgU01UUCBldm9sdXRpb24gcmVtYWlucyBPTkdPSU5HLiINCiAgICAgICAgICAgIGluY2x1ZGUgKg0KICAgICAgICB9DQoNCiAgICAgICAgc3R5bGVzIHsNCiAgICAgICAgICAgIGVsZW1lbnQgIlBPQyIgew0KICAgICAgICAgICAgICAgIHNoYXBlIENpcmNsZQ0KICAgICAgICAgICAgICAgIHdpZHRoIDE5MA0KICAgICAgICAgICAgICAgIGhlaWdodCAxOTANCiAgICAgICAgICAgICAgICBmb250U2l6ZSAxOA0KICAgICAgICAgICAgICAgIG1ldGFkYXRhIGZhbHNlDQogICAgICAgICAgICAgICAgZGVzY3JpcHRpb24gZmFsc2UNCiAgICAgICAgICAgIH0NCg0KICAgICAgICAgICAgZWxlbWVudCAiUE9DLVVzZXIiIHsNCiAgICAgICAgICAgICAgICBiYWNrZ3JvdW5kICMyNDMwNDcNCiAgICAgICAgICAgICAgICBjb2xvciAjRjhGQUZDDQogICAgICAgICAgICAgICAgc3Ryb2tlICM5M0M1RkQNCiAgICAgICAgICAgICAgICBzdHJva2VXaWR0aCAyDQogICAgICAgICAgICB9DQoNCiAgICAgICAgICAgIGVsZW1lbnQgIlBPQy1PcGVyYXRpb25hbCIgew0KICAgICAgICAgICAgICAgIGJhY2tncm91bmQgIzFFMjkzQg0KICAgICAgICAgICAgICAgIGNvbG9yICNGOEZBRkMNCiAgICAgICAgICAgICAgICBzdHJva2UgIzM4QkRGOA0KICAgICAgICAgICAgICAgIHN0cm9rZVdpZHRoIDINCiAgICAgICAgICAgIH0NCg0KICAgICAgICAgICAgZWxlbWVudCAiUE9DLUVkZ2UiIHsNCiAgICAgICAgICAgICAgICBiYWNrZ3JvdW5kICMxNjRFNjMNCiAgICAgICAgICAgICAgICBjb2xvciAjRjhGQUZDDQogICAgICAgICAgICAgICAgc3Ryb2tlICMyMkQzRUUNCiAgICAgICAgICAgICAgICBzdHJva2VXaWR0aCAyDQogICAgICAgICAgICB9DQoNCiAgICAgICAgICAgIGVsZW1lbnQgIlBPQy1FZGl0b3JpYWwiIHsNCiAgICAgICAgICAgICAgICBiYWNrZ3JvdW5kICMzMTJFODENCiAgICAgICAgICAgICAgICBjb2xvciAjRjhGQUZDDQogICAgICAgICAgICAgICAgc3Ryb2tlICNBNUI0RkMNCiAgICAgICAgICAgICAgICBzdHJva2VXaWR0aCAyDQogICAgICAgICAgICB9DQoNCiAgICAgICAgICAgIGVsZW1lbnQgIlBPQy1FeHRlcm5hbCIgew0KICAgICAgICAgICAgICAgIGJhY2tncm91bmQgIzMwMzc0NA0KICAgICAgICAgICAgICAgIGNvbG9yICNGMUY1RjkNCiAgICAgICAgICAgICAgICBzdHJva2UgIzk0QTNCOA0KICAgICAgICAgICAgICAgIHN0cm9rZVdpZHRoIDINCiAgICAgICAgICAgIH0NCg0KICAgICAgICAgICAgZWxlbWVudCAiUE9DLU9uZ29pbmciIHsNCiAgICAgICAgICAgICAgICBiYWNrZ3JvdW5kICM3ODM1MEYNCiAgICAgICAgICAgICAgICBjb2xvciAjRkZGN0VEDQogICAgICAgICAgICAgICAgc3Ryb2tlICNGNTlFMEINCiAgICAgICAgICAgICAgICBzdHJva2VXaWR0aCAyDQogICAgICAgICAgICB9DQoNCiAgICAgICAgICAgIHJlbGF0aW9uc2hpcCAiUE9DLU9wZXJhdGlvbmFsIiB7DQogICAgICAgICAgICAgICAgY29sb3IgIzk0QTNCOA0KICAgICAgICAgICAgICAgIHN0eWxlIGRhc2hlZA0KICAgICAgICAgICAgICAgIHRoaWNrbmVzcyAyDQogICAgICAgICAgICAgICAgcm91dGluZyBEaXJlY3QNCiAgICAgICAgICAgICAgICBmb250U2l6ZSAyMA0KICAgICAgICAgICAgfQ0KDQogICAgICAgICAgICByZWxhdGlvbnNoaXAgIlBPQy1PbmdvaW5nIiB7DQogICAgICAgICAgICAgICAgY29sb3IgI0Y1OUUwQg0KICAgICAgICAgICAgICAgIHN0eWxlIGRhc2hlZA0KICAgICAgICAgICAgICAgIHRoaWNrbmVzcyAyDQogICAgICAgICAgICAgICAgcm91dGluZyBEaXJlY3QNCiAgICAgICAgICAgICAgICBmb250U2l6ZSAyMA0KICAgICAgICAgICAgfQ0KICAgICAgICB9DQogICAgfQ0KDQogICAgY29uZmlndXJhdGlvbiB7DQogICAgICAgIHNjb3BlIGxhbmRzY2FwZQ0KICAgIH0NCn0=",
+    "structurizr.inspection.info" : "21",
+    "structurizr.inspection.ignore" : "0",
+    "structurizr.inspection.warning" : "0"
+  },
+  "views" : {
+    "configuration" : {
+      "properties" : {
+        "structurizr.locale" : "en-GB",
+        "structurizr.timezone" : "UTC"
+      },
+      "styles" : {
+        "elements" : [ {
+          "description" : false,
+          "fontSize" : 18,
+          "height" : 190,
+          "metadata" : false,
+          "shape" : "Circle",
+          "tag" : "POC",
+          "width" : 190
+        }, {
+          "background" : "#164e63",
+          "color" : "#f8fafc",
+          "stroke" : "#22d3ee",
+          "strokeWidth" : 2,
+          "tag" : "POC-Edge"
+        }, {
+          "background" : "#312e81",
+          "color" : "#f8fafc",
+          "stroke" : "#a5b4fc",
+          "strokeWidth" : 2,
+          "tag" : "POC-Editorial"
+        }, {
+          "background" : "#303744",
+          "color" : "#f1f5f9",
+          "stroke" : "#94a3b8",
+          "strokeWidth" : 2,
+          "tag" : "POC-External"
+        }, {
+          "background" : "#78350f",
+          "color" : "#fff7ed",
+          "stroke" : "#f59e0b",
+          "strokeWidth" : 2,
+          "tag" : "POC-Ongoing"
+        }, {
+          "background" : "#1e293b",
+          "color" : "#f8fafc",
+          "stroke" : "#38bdf8",
+          "strokeWidth" : 2,
+          "tag" : "POC-Operational"
+        }, {
+          "background" : "#243047",
+          "color" : "#f8fafc",
+          "stroke" : "#93c5fd",
+          "strokeWidth" : 2,
+          "tag" : "POC-User"
+        } ],
+        "relationships" : [ {
+          "color" : "#f59e0b",
+          "fontSize" : 20,
+          "routing" : "Direct",
+          "style" : "Dashed",
+          "tag" : "POC-Ongoing",
+          "thickness" : 2
+        }, {
+          "color" : "#94a3b8",
+          "fontSize" : 20,
+          "routing" : "Direct",
+          "style" : "Dashed",
+          "tag" : "POC-Operational",
+          "thickness" : 2
+        } ]
+      },
+      "terminology" : { }
+    },
+    "systemLandscapeViews" : [ {
+      "description" : "P1 distributed validation is operational; P2 SMTP evolution remains ONGOING.",
+      "dimensions" : {
+        "height" : 1967,
+        "width" : 3795
+      },
+      "elements" : [ {
+        "id" : "1",
+        "x" : 149,
+        "y" : 375
+      }, {
+        "id" : "2",
+        "x" : 149,
+        "y" : 1155
+      }, {
+        "id" : "3",
+        "x" : 149,
+        "y" : 775
+      }, {
+        "id" : "4",
+        "x" : 1250,
+        "y" : 845
+      }, {
+        "id" : "5",
+        "x" : 724,
+        "y" : 615
+      }, {
+        "id" : "6",
+        "x" : 1244,
+        "y" : 390
+      }, {
+        "id" : "7",
+        "x" : 1699,
+        "y" : 610
+      }, {
+        "id" : "8",
+        "x" : 2705,
+        "y" : 975
+      }, {
+        "id" : "9",
+        "x" : 2384,
+        "y" : 93
+      }, {
+        "id" : "10",
+        "x" : 2384,
+        "y" : 333
+      }, {
+        "id" : "11",
+        "x" : 2384,
+        "y" : 573
+      }, {
+        "id" : "12",
+        "x" : 2384,
+        "y" : 813
+      }, {
+        "id" : "13",
+        "x" : 2104,
+        "y" : 1285
+      }, {
+        "id" : "14",
+        "x" : 2989,
+        "y" : 1260
+      }, {
+        "id" : "15",
+        "x" : 2999,
+        "y" : 1570
+      }, {
+        "id" : "16",
+        "x" : 3454,
+        "y" : 1400
+      } ],
+      "enterpriseBoundaryVisible" : true,
+      "key" : "trustsender-engineering-overview-manual-poc",
+      "name" : "System Landscape View",
+      "order" : 1,
+      "relationships" : [ {
+        "id" : "17",
+        "vertices" : [ {
+          "x" : 494,
+          "y" : 1250
+        } ]
+      }, {
+        "id" : "18",
+        "vertices" : [ {
+          "x" : 479,
+          "y" : 470
+        } ]
+      }, {
+        "id" : "19",
+        "vertices" : [ {
+          "x" : 489,
+          "y" : 870
+        } ]
+      }, {
+        "id" : "20",
+        "vertices" : [ {
+          "x" : 1064,
+          "y" : 485
+        } ]
+      }, {
+        "id" : "21"
+      }, {
+        "id" : "22",
+        "vertices" : [ {
+          "x" : 1055,
+          "y" : 940
+        } ]
+      }, {
+        "id" : "23",
+        "vertices" : [ {
+          "x" : 1589,
+          "y" : 485
+        } ]
+      }, {
+        "id" : "24",
+        "vertices" : [ {
+          "x" : 2065,
+          "y" : 1070
+        } ]
+      }, {
+        "id" : "25",
+        "vertices" : [ {
+          "x" : 1804,
+          "y" : 1380
+        } ]
+      }, {
+        "id" : "26"
+      }, {
+        "id" : "27",
+        "vertices" : [ {
+          "x" : 2594,
+          "y" : 1305
+        }, {
+          "x" : 2799,
+          "y" : 1305
+        } ]
+      }, {
+        "id" : "28",
+        "vertices" : [ {
+          "x" : 2800,
+          "y" : 1430
+        }, {
+          "x" : 2594,
+          "y" : 1430
+        } ]
+      }, {
+        "id" : "29",
+        "vertices" : [ {
+          "x" : 3299,
+          "y" : 1358
+        } ]
+      }, {
+        "id" : "30",
+        "vertices" : [ {
+          "x" : 2189,
+          "y" : 428
+        } ]
+      }, {
+        "id" : "31",
+        "vertices" : [ {
+          "x" : 2189,
+          "y" : 188
+        } ]
+      }, {
+        "id" : "32",
+        "vertices" : [ {
+          "x" : 2189,
+          "y" : 668
+        } ]
+      }, {
+        "id" : "33",
+        "vertices" : [ {
+          "x" : 2189,
+          "y" : 908
+        } ]
+      }, {
+        "id" : "34",
+        "vertices" : [ {
+          "x" : 2584,
+          "y" : 1595
+        }, {
+          "x" : 2800,
+          "y" : 1595
+        } ]
+      }, {
+        "id" : "35",
+        "vertices" : [ {
+          "x" : 2800,
+          "y" : 1735
+        }, {
+          "x" : 2610,
+          "y" : 1735
+        } ]
+      }, {
+        "id" : "36",
+        "vertices" : [ {
+          "x" : 3309,
+          "y" : 1665
+        } ]
+      } ],
+      "title" : "TrustSender.io Engineering Overview"
+    } ]
+  }
+}
